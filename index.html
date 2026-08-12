@@ -2,477 +2,552 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0E1116">
-<title>Heavenly Gold Lab — Assay Office</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070F">
+<title>Heavenly Gold Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --ink:#0E1116; --slate:#151A21; --raise:#1C232C; --sunk:#0A0D11;
-  --parchment:#E9E4D8; --muted:#7E8896; --dim:#5A626E;
-  --brass:#B08D57; --brass-dim:#6E5936;
-  --oxide:#A6402F; --verdigris:#4F8A7B; --amber:#C08A3E;
-  --line:#252D37; --line-soft:#1A2028;
-  --pad:18px;
-}
+:root{--bg:#05070F;--surf:#0E1728;--surf2:#141F36;--raise:#1C2A47;--line:#26365A;
+--txt:#F2F6FF;--mut:#8DA0C4;--dim:#5F7196;--gold:#FFC83D;--gold2:#FF9A2E;
+--up:#16E39B;--down:#FF5470;--cyan:#38D9FF;--violet:#B98CFF;--pad:16px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:var(--ink);color:var(--parchment)}
-body{
-  font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,sans-serif;
-  font-size:15px;line-height:1.5;
-  padding-bottom:calc(72px + env(safe-area-inset-bottom));
-  -webkit-font-smoothing:antialiased;
-}
-h1,h2,h3{margin:0;font-family:'Fraunces',Georgia,serif;font-weight:600;
-  font-variation-settings:'SOFT' 0,'WONK' 1;letter-spacing:-.01em}
-code{font-family:'IBM Plex Mono',monospace;font-size:.9em;color:var(--brass)}
-
-.mast{padding:calc(20px + env(safe-area-inset-top)) var(--pad) 16px;
-  border-bottom:1px solid var(--line);background:var(--sunk);position:relative;overflow:hidden}
-.mast:before{content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(90deg,transparent 0 3px,rgba(176,141,87,.03) 3px 4px);
-  pointer-events:none}
-.mast .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.22em;
-  text-transform:uppercase;color:var(--brass-dim);font-weight:600}
-.mast h1{font-size:26px;margin:5px 0 3px;line-height:1.08}
-.mast h1 em{font-style:italic;color:var(--brass)}
-.mast .sub{font-size:12px;color:var(--muted);max-width:30ch}
-.pulse{position:absolute;top:calc(22px + env(safe-area-inset-top));right:var(--pad);
-  display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;
-  font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--verdigris)}
-.dot.bad{background:var(--oxide)}
-.dot.warn{background:var(--amber)}
-
+html,body{margin:0;background:var(--bg);color:var(--txt)}
+body{font-family:Inter,-apple-system,system-ui,sans-serif;font-size:15px;
+padding-bottom:calc(72px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;
+background-image:radial-gradient(1000px 500px at 50% -10%,rgba(255,200,61,.07),transparent 70%)}
+.mono{font-family:'JetBrains Mono',monospace}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.02em}
+header{padding:calc(13px + env(safe-area-inset-top)) var(--pad) 12px;display:flex;
+justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.brand{font-size:15px;font-weight:900}
+.brand span{background:linear-gradient(90deg,var(--gold),var(--gold2));
+-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--line);
+border-radius:20px;padding:5px 11px;font-size:10px;font-weight:800;letter-spacing:.09em;
+text-transform:uppercase;color:var(--mut)}
+.blip{width:7px;height:7px;border-radius:50%;background:var(--up);animation:p 2.2s infinite}
+.blip.off{background:var(--down);animation:none}
+@keyframes p{0%{box-shadow:0 0 0 0 rgba(22,227,155,.65)}70%{box-shadow:0 0 0 9px rgba(22,227,155,0)}100%{box-shadow:0 0 0 0 rgba(22,227,155,0)}}
 .wrap{padding:0 var(--pad)}
-.sec{margin:22px 0}
-.sec-head{display:flex;align-items:baseline;justify-content:space-between;
-  margin-bottom:11px;gap:10px}
-.sec-head h2{font-size:17px}
-.sec-head .note{font-family:'IBM Plex Mono',monospace;font-size:9.5px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
-.rule{height:1px;background:linear-gradient(90deg,var(--brass-dim),transparent);margin-bottom:13px}
-
-.model{background:var(--slate);border:1px solid var(--line);border-radius:3px;
-  margin-bottom:11px;position:relative;overflow:hidden}
-.model.open .body{display:block}
-.model .top{padding:14px 96px 14px 15px;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
-.model .id{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--brass-dim);
-  font-weight:600;padding-top:3px;min-width:22px}
-.model .meat{flex:1;min-width:0}
-.model .name{font-family:'Fraunces',Georgia,serif;font-size:16px;font-weight:600;
-  line-height:1.2;margin-bottom:3px}
-.model .claim{font-size:12.5px;color:var(--muted);line-height:1.4}
-.model .caret{color:var(--dim);font-size:10px;transition:transform .18s;padding-top:4px}
-.model.open .caret{transform:rotate(180deg)}
-
-.hallmark{position:absolute;top:11px;right:11px;transform:rotate(-7deg);
-  font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;
-  letter-spacing:.16em;padding:3px 7px;border:1.5px solid;border-radius:2px;
-  opacity:.92;pointer-events:none;text-transform:uppercase}
-.hallmark.falsified{color:var(--oxide);border-color:var(--oxide)}
-.hallmark.unproven{color:var(--muted);border-color:var(--dim)}
-.hallmark.testing{color:var(--verdigris);border-color:var(--verdigris)}
-.hallmark.supported{color:var(--brass);border-color:var(--brass)}
-
-.body{display:none;border-top:1px solid var(--line-soft);padding:13px 15px 15px;
-  background:var(--sunk)}
-.evidence{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.evidence>div{background:var(--raise);border-radius:2px;padding:9px 11px}
-.evidence i{font-style:normal;display:block;font-family:'IBM Plex Mono',monospace;
-  font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
-  font-weight:600;margin-bottom:3px}
-.evidence b{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;
-  display:block;line-height:1.15}
-.pos{color:var(--verdigris)} .neg{color:var(--oxide)} .flat{color:var(--muted)}
-.verdict{font-size:13px;line-height:1.55;color:var(--parchment);
-  border-left:2px solid var(--brass-dim);padding-left:11px}
-.verdict strong{color:var(--brass);font-weight:600}
-
-table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
-th{text-align:left;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--dim);font-weight:600;padding:0 0 7px}
-td{padding:7px 0;border-top:1px solid var(--line-soft);color:var(--parchment)}
-td.r,th.r{text-align:right}
-
-.price{font-family:'IBM Plex Mono',monospace;font-size:40px;font-weight:500;
-  letter-spacing:-.02em;line-height:1}
-.price small{font-size:13px;color:var(--muted);letter-spacing:.06em}
-.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
-.strip>div{background:var(--slate);border:1px solid var(--line);border-radius:2px;padding:10px}
-.strip i{font-style:normal;display:block;font-family:'IBM Plex Mono',monospace;
-  font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
-  font-weight:600;margin-bottom:4px}
-.strip b{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
-
-.watching{background:var(--slate);border:1px solid var(--line);border-left:2px solid var(--brass);
-  border-radius:2px;padding:13px 15px;margin:12px 0}
-.watching .lbl{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--brass-dim);font-weight:600;margin-bottom:5px}
-.watching .txt{font-family:'Fraunces',Georgia,serif;font-size:16px;line-height:1.3}
-
-.gate{background:linear-gradient(180deg,var(--slate),var(--sunk));
-  border:1px solid var(--line);border-radius:3px;padding:16px;margin:14px 0}
-.gate h3{font-size:15px;margin-bottom:4px}
-.gate p{margin:0 0 12px;font-size:12.5px;color:var(--muted);line-height:1.5}
-.track{height:5px;background:var(--sunk);border-radius:3px;overflow:hidden;
-  border:1px solid var(--line)}
-.track>div{height:100%;background:linear-gradient(90deg,var(--brass-dim),var(--brass))}
-.gate .count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);
-  margin-top:7px;letter-spacing:.08em}
-
-.empty{text-align:center;padding:32px 20px;color:var(--muted);font-size:13px;line-height:1.6}
-.empty .big{font-family:'Fraunces',Georgia,serif;font-size:17px;color:var(--parchment);
-  display:block;margin-bottom:6px}
-.footnote{font-size:11.5px;color:var(--dim);line-height:1.6;margin-top:12px;
-  padding-top:11px;border-top:1px solid var(--line-soft)}
-
-nav{position:fixed;left:0;right:0;bottom:0;background:rgba(10,13,17,.96);
-  backdrop-filter:blur(14px);border-top:1px solid var(--line);
-  display:grid;grid-template-columns:repeat(5,1fr);
-  padding-bottom:env(safe-area-inset-bottom);z-index:50}
-nav button{background:none;border:0;color:var(--dim);padding:11px 2px 10px;
-  font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.1em;
-  text-transform:uppercase;font-weight:600;cursor:pointer;position:relative}
-nav button.on{color:var(--brass)}
-nav button.on:after{content:'';position:absolute;top:0;left:26%;right:26%;height:1.5px;
-  background:var(--brass)}
-nav button .ic{display:block;font-size:15px;margin-bottom:3px;font-weight:400;
-  font-family:'IBM Plex Sans',sans-serif}
-.page{display:none} .page.on{display:block}
-
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.page{display:none;animation:f .22s}.page.on{display:block}
+@keyframes f{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.hero{background:linear-gradient(150deg,#16233D,#0C1424 60%);border:1px solid var(--line);
+border-radius:18px;padding:17px;margin:14px 0;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.hero .sym{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.hero .px{font-size:44px;font-weight:800;letter-spacing:-.035em;line-height:1.02;margin:3px 0 5px;
+text-shadow:0 0 26px rgba(255,200,61,.28)}
+.hero .chg{font-size:15px;font-weight:700}
+.up{color:var(--up)}.down{color:var(--down)}.neu{color:var(--mut)}
+.range{margin-top:15px}
+.rbar{height:7px;background:var(--raise);border-radius:5px;position:relative}
+.rbar .f{position:absolute;inset:0;border-radius:5px;
+background:linear-gradient(90deg,rgba(255,84,112,.5),rgba(255,200,61,.5),rgba(22,227,155,.5))}
+.rbar .p{position:absolute;top:-4px;width:3px;height:15px;background:#fff;border-radius:2px;
+box-shadow:0 0 10px rgba(255,255,255,.85)}
+.rlbl{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:7px}
+canvas{width:100%;display:block}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:12px 0}
+.card .cap{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;
+border-bottom:1px solid var(--line)}
+.card .cap b{font-size:13.5px;font-weight:800}
+.card .cap i{font-style:normal;font-size:10px;color:var(--dim);letter-spacing:.09em;
+text-transform:uppercase;font-weight:800}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 0}
+.tiles.t2{grid-template-columns:repeat(2,1fr)}
+.tile{background:var(--surf);border:1px solid var(--line);border-radius:13px;padding:12px}
+.tile i{font-style:normal;display:block;font-size:9px;letter-spacing:.11em;text-transform:uppercase;
+color:var(--dim);font-weight:800;margin-bottom:5px}
+.tile b{font-size:16.5px;font-weight:800;display:block;letter-spacing:-.015em}
+.tile small{display:block;font-size:10px;color:var(--dim);margin-top:3px;font-weight:600}
+.state{border-radius:16px;padding:15px;margin:12px 0;
+background:linear-gradient(135deg,rgba(255,200,61,.16),rgba(255,154,46,.05));
+border:1px solid rgba(255,200,61,.32)}
+.state i{font-style:normal;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+color:var(--gold);font-weight:800;display:block;margin-bottom:5px}
+.state b{font-size:16px;font-weight:600;line-height:1.4}
+.news{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:13px 15px}
+.nrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.nrow:first-child{border-top:0}
+.nrow .imp{width:4px;height:26px;border-radius:3px;background:var(--gold);flex:none}
+.nrow .imp.high{background:var(--down)}
+.nrow .txt{flex:1;min-width:0}
+.nrow .ttl{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nrow .sub{font-size:10.5px;color:var(--dim);font-weight:600}
+.nrow .in{font-size:11px;font-weight:800;white-space:nowrap}
+.sec{margin:20px 0}
+.sec>h2{font-size:16.5px;margin-bottom:11px;display:flex;justify-content:space-between;align-items:baseline}
+.sec>h2 em{font-style:normal;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+color:var(--dim);font-weight:800}
+.sig{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:13px 14px;
+margin-bottom:10px;position:relative;overflow:hidden;cursor:pointer}
+.sig:before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mut)}
+.sig.long:before{background:var(--up)}.sig.short:before{background:var(--down)}
+.sig .r1{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px}
+.sig .nm{font-size:13.5px;font-weight:800}
+.tag{font-size:9.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:7px}
+.tag.long{background:rgba(22,227,155,.16);color:var(--up)}
+.tag.short{background:rgba(255,84,112,.16);color:var(--down)}
+.lv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:9px}
+.lv div{background:var(--surf2);border-radius:9px;padding:8px 9px}
+.lv i{font-style:normal;font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;
+color:var(--dim);font-weight:800;display:block;margin-bottom:2px}
+.lv b{font-size:13.5px;font-weight:700}
+.prob{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.ptrack{flex:1;height:5px;background:var(--raise);border-radius:4px;overflow:hidden}
+.ptrack div{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold2),var(--gold))}
+.prob .pv{font-size:11px;font-weight:800;color:var(--gold);white-space:nowrap}
+.sfoot{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--mut)}
+.res{font-weight:900;font-size:12.5px}
+.mrow{background:var(--surf);border:1px solid var(--line);border-radius:14px;margin-bottom:9px;overflow:hidden}
+.mrow .top{padding:13px 14px;cursor:pointer}
+.mrow .t1{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.mrow .nm{font-size:14px;font-weight:800}.mrow .ex{font-size:15px;font-weight:900}
+.mbar{height:7px;background:var(--raise);border-radius:5px;position:relative;overflow:hidden}
+.mbar .z{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--dim);z-index:2}
+.mbar .v{position:absolute;top:0;bottom:0}
+.mstat{display:flex;gap:13px;font-size:10.5px;color:var(--mut);margin-top:8px;font-weight:600;flex-wrap:wrap}
+.mrow.ctrl{border-color:rgba(185,140,255,.45);background:linear-gradient(135deg,rgba(185,140,255,.09),var(--surf))}
+.mbody{display:none;padding:0 14px 14px;font-size:12.5px;color:var(--mut);line-height:1.55}
+.mrow.open .mbody{display:block}
+.mbody .g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.mbody .g div{background:var(--surf2);border-radius:9px;padding:8px 10px}
+.mbody .g i{font-style:normal;font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;
+color:var(--dim);font-weight:800;display:block}
+.mbody .g b{font-size:13px;color:var(--txt);font-weight:700}
+.learn{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:10px}
+.learn h3{font-size:14.5px;margin-bottom:6px;color:var(--gold)}
+.learn p{margin:0;font-size:13px;color:var(--mut);line-height:1.6}
+.learn p+p{margin-top:9px}.learn b{color:var(--txt)}
+.prog{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:16px}
+.prog h3{font-size:15px;margin-bottom:5px}
+.prog p{margin:0 0 13px;font-size:12.5px;color:var(--mut);line-height:1.55}
+.ptr{height:9px;background:var(--raise);border-radius:6px;overflow:hidden}
+.ptr div{height:100%;border-radius:6px;transition:width .6s;background:linear-gradient(90deg,var(--gold2),var(--gold))}
+table{width:100%;border-collapse:collapse;font-size:12px}
+td{padding:9px 0;border-top:1px solid var(--line)}td.r{text-align:right}
+.empty{text-align:center;padding:32px 18px;color:var(--mut);font-size:13px;line-height:1.6}
+.empty b{display:block;font-size:16.5px;color:var(--txt);margin-bottom:6px;font-weight:800}
+.note{font-size:11.5px;color:var(--dim);line-height:1.6;margin-top:11px}
+/* sizer */
+.calc{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:15px}
+.calc label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+color:var(--dim);font-weight:800;margin:11px 0 5px}
+.calc input{width:100%;background:var(--surf2);border:1px solid var(--line);border-radius:10px;
+padding:11px 12px;color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600}
+.calc input:focus{outline:none;border-color:var(--gold)}
+.calcout{background:linear-gradient(135deg,rgba(255,200,61,.14),transparent);
+border:1px solid rgba(255,200,61,.3);border-radius:12px;padding:13px;margin-top:14px}
+.calcout i{font-style:normal;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+color:var(--gold);font-weight:800;display:block;margin-bottom:4px}
+.calcout b{font-size:26px;font-weight:900;display:block}
+.calcout small{font-size:11.5px;color:var(--mut);display:block;margin-top:5px}
+/* heat */
+.heat{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.hcell{border-radius:8px;padding:8px 4px;text-align:center;background:var(--surf2)}
+.hcell .hh{font-size:10px;font-weight:800;color:var(--dim)}
+.hcell .hv{font-size:11.5px;font-weight:800;margin-top:2px}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(3,5,12,.9);backdrop-filter:blur(8px);
+z-index:100;display:none;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 14px 30px}
+.modal.on{display:block}
+.msheet{background:var(--surf);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+max-width:560px;margin:0 auto}
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;
+border-bottom:1px solid var(--line)}
+.mhead b{font-size:15px;font-weight:800}
+.mclose{background:var(--raise);border:0;color:var(--txt);width:32px;height:32px;border-radius:50%;
+font-size:17px;cursor:pointer;font-family:inherit}
+.mbodyx{padding:14px 16px}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(5,7,15,.97);backdrop-filter:blur(18px);
+border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);
+padding-bottom:env(safe-area-inset-bottom);z-index:40}
+nav button{background:none;border:0;color:var(--dim);padding:10px 2px 9px;cursor:pointer;
+font-size:9.5px;font-weight:800;font-family:inherit}
+nav button .i{display:block;font-size:17px;margin-bottom:3px}
+nav button.on{color:var(--gold)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </style>
 </head>
 <body>
 
-<header class="mast">
-  <div class="eyebrow">Heavenly Gold Lab</div>
-  <h1>The Assay <em>Office</em></h1>
-  <div class="sub">Every strategy gets tested until it breaks. What survives gets traded.</div>
-  <div class="pulse"><span class="dot" id="pulseDot"></span><span id="pulseTxt">checking</span></div>
-</header>
+<header><div class="brand">Heavenly <span>Gold</span> Lab</div>
+<div class="chip"><span class="blip" id="blip"></span><span id="blipTxt">live</span></div></header>
 
-<section class="page on" id="p-research">
-<div class="wrap">
-  <div class="sec">
-    <div class="sec-head"><h2>Under test</h2><span class="note">Live evidence</span></div>
-    <div class="rule"></div>
-    <div id="activeModels"></div>
-  </div>
-  <div class="sec">
-    <div class="sec-head"><h2>What held up</h2><span class="note">Survived every check</span></div>
-    <div class="rule"></div>
-    <div id="supported"></div>
-  </div>
-  <div class="footnote">
-    A model is only listed as holding up if it stayed positive across separate
-    datasets, beat a random-entry control, and kept its sign out of sample.
-    Everything else sits in the archive with its numbers attached.
-  </div>
-</div>
-</section>
+<section class="page on" id="p-live"><div class="wrap">
+  <div class="hero"><div class="sym" id="hSym">XAUUSDc · 15 min</div>
+    <div class="px mono" id="hPx">—</div><div class="chg mono" id="hChg">—</div>
+    <div class="range"><div class="rbar"><div class="f"></div><div class="p" id="rPin"></div></div>
+      <div class="rlbl"><span class="mono" id="rLo">—</span><span>today's range</span>
+      <span class="mono" id="rHi">—</span></div></div></div>
+  <div class="state"><i>What the machine sees</i><b id="stTxt">Waiting for the feed…</b></div>
+  <div class="card"><div class="cap"><b>Price</b><i id="cInfo">—</i></div>
+    <canvas id="cPrice" height="430"></canvas></div>
+  <div class="tiles"><div class="tile"><i>Spread</i><b class="mono" id="tSpr">—</b></div>
+    <div class="tile"><i>Candles today</i><b class="mono" id="tBars">—</b></div>
+    <div class="tile"><i>Feed age</i><b class="mono" id="tAge">—</b></div></div>
+  <div class="sec"><h2>Coming up <em>economic calendar</em></h2><div class="news" id="newsBox"></div></div>
+  <div class="sec"><h2>Feeds <em id="fUpd">—</em></h2><table><tbody id="fRows"></tbody></table></div>
+</div></section>
 
-<section class="page" id="p-live">
-<div class="wrap">
-  <div class="sec">
-    <div class="sec-head"><h2>Gold now</h2><span class="note" id="feedAge">—</span></div>
-    <div class="rule"></div>
-    <div class="price" id="livePrice">—<small> XAUUSDc</small></div>
-    <div class="strip">
-      <div><i>Day high</i><b id="dayHi">—</b></div>
-      <div><i>Day low</i><b id="dayLo">—</b></div>
-      <div><i>Spread</i><b id="spread">—</b></div>
-    </div>
-    <div class="watching">
-      <div class="lbl">The machine sees</div>
-      <div class="txt" id="watching">Waiting for the feed</div>
-    </div>
-  </div>
-  <div class="sec">
-    <div class="sec-head"><h2>Feeds</h2><span class="note">From MetaTrader</span></div>
-    <div class="rule"></div>
-    <table><thead><tr><th>Symbol</th><th class="r">Bars</th><th class="r">Last bar</th><th class="r">Age</th></tr></thead>
-    <tbody id="feedRows"></tbody></table>
-  </div>
-</div>
-</section>
+<section class="page" id="p-signals"><div class="wrap">
+  <div class="tiles" style="margin-top:14px">
+    <div class="tile"><i>Logged</i><b class="mono" id="sTot">0</b></div>
+    <div class="tile"><i>Finished</i><b class="mono" id="sRes">0</b></div>
+    <div class="tile"><i>Still open</i><b class="mono" id="sOpen">0</b></div></div>
+  <div class="sec"><h2>Signals <em>tap to replay</em></h2><div id="sigList"></div>
+    <div class="note">The gold bar is that model's measured hit rate — how often it
+      actually reached target rather than stop — with its sample size beside it.
+      Below thirty finished trades it means very little.</div></div>
+</div></section>
 
-<section class="page" id="p-signals">
-<div class="wrap">
-  <div class="sec">
-    <div class="sec-head"><h2>Forward test</h2><span class="note">Logged before the outcome</span></div>
-    <div class="rule"></div>
-    <div id="fwdBox"></div>
-  </div>
-  <div class="sec">
-    <div class="sec-head"><h2>Recent signals</h2><span class="note">Newest first</span></div>
-    <div class="rule"></div>
-    <table><thead><tr><th>When</th><th>Dir</th><th class="r">Entry</th><th class="r">Result</th></tr></thead>
-    <tbody id="sigRows"></tbody></table>
-  </div>
-  <div class="footnote">
-    Signals are written to disk the moment a bar closes, before anyone knows
-    what happens next. That is the only way a live record means anything.
-    The backfill from historical bars is kept separate and does not count here.
-  </div>
-</div>
-</section>
+<section class="page" id="p-models"><div class="wrap">
+  <div class="card" style="margin-top:14px"><div class="cap"><b>All signals combined</b>
+    <i>running total in R</i></div><canvas id="cEq" height="300"></canvas></div>
+  <div class="tiles" style="margin-top:0">
+    <div class="tile"><i>Worst drawdown</i><b class="mono down" id="eDD">—</b><small>peak to trough</small></div>
+    <div class="tile"><i>Longest losing run</i><b class="mono" id="eStreak">—</b><small>in a row</small></div>
+    <div class="tile"><i>Best run</i><b class="mono up" id="eWin">—</b><small>wins in a row</small></div></div>
+  <div class="sec"><h2>Every model <em>tap for detail</em></h2><div id="mList"></div>
+    <div class="note">Purple is the random control — coin flips with identical stops and
+      targets. Any model below it is doing worse than guessing.</div></div>
+</div></section>
 
-<section class="page" id="p-log">
-<div class="wrap">
-  <div class="sec">
-    <div class="sec-head"><h2>Stage 1 — Observe</h2><span class="note">Chart work only</span></div>
-    <div class="rule"></div>
-    <div class="gate">
-      <h3>Mark setups. Log them. Don't trade them.</h3>
-      <p>Thirty logged observations before the platform opens. The point is to find out
-         whether your eye adds anything the machine misses — which only works if you
-         write the call down before you know the answer.</p>
-      <div class="track"><div id="obsBar" style="width:0%"></div></div>
-      <div class="count" id="obsCount">0 / 30 observations</div>
+<section class="page" id="p-risk"><div class="wrap">
+  <div class="sec" style="margin-top:16px"><h2>Position size <em>off real money only</em></h2>
+    <div class="calc">
+      <label>Account balance (what you actually deposited)</label>
+      <input id="cBal" class="mono" type="number" inputmode="decimal" placeholder="28.00">
+      <label>Risk per trade %</label>
+      <input id="cRisk" class="mono" type="number" inputmode="decimal" value="1">
+      <label>Stop distance in dollars per ounce</label>
+      <input id="cStop" class="mono" type="number" inputmode="decimal" placeholder="4.00">
+      <div class="calcout"><i>Position size</i><b class="mono" id="cLots">—</b>
+        <small id="cNote">Enter your balance and stop distance.</small></div>
     </div>
-    <div class="footnote">
-      Log an observation from the terminal with <code>gold observe</code>.
-      Record direction, level and reasoning before the next bar prints.
-    </div>
-  </div>
-</div>
-</section>
+    <div class="note">Broker credit is not money. If your platform shows double what you
+      deposited, size off the deposit — the credit gets clawed back and the margin
+      figure is a mirage.</div></div>
 
-<section class="page" id="p-archive">
-<div class="wrap">
-  <div class="sec">
-    <div class="sec-head"><h2>Archive</h2><span class="note">Tested and retired</span></div>
-    <div class="rule"></div>
-    <div id="archiveModels"></div>
+  <div class="sec"><h2>When the day pays <em>average R by hour, UTC</em></h2>
+    <div class="heat" id="heatBox"></div>
+    <div class="note">Every finished signal grouped by the hour it fired. Hours with
+      fewer than five trades are left out.</div></div>
+
+  <div class="sec"><h2>Models that fire together <em>are they really separate?</em></h2>
+    <table><tbody id="lapRows"></tbody></table>
+    <div class="note">Two models signalling the same direction in the same hour is one
+      trade wearing two names. Counting it twice makes a system look more diversified
+      than it is.</div></div>
+</div></section>
+
+<section class="page" id="p-learn"><div class="wrap">
+  <div class="sec" style="margin-top:16px"><h2>Reading this app</h2>
+    <div class="learn"><h3>R — the only unit that matters</h3>
+      <p>One <b>R</b> is whatever you risked. If your stop sits $4 from entry, that trade
+        risks 1R. A target twice as far away pays 2R.</p>
+      <p>Using R instead of rands lets a $10 trade and a $1,000 trade be compared honestly,
+        and stops a few big wins hiding a lot of small losses.</p></div>
+    <div class="learn"><h3>Expectancy</h3>
+      <p>The average R across every finished trade. <b>+0.20R</b> means each trade made a
+        fifth of what it risked, on average. <b>−0.10R</b> means each one quietly cost you a tenth.</p>
+      <p>Win rate alone tells you nothing — you can win 80% of the time and still go
+        broke if the losses are big enough.</p></div>
+    <div class="learn"><h3>The range after the number</h3>
+      <p>An expectancy of <b>+0.17R</b> is an estimate, not a fact. The app shows the range
+        the true value plausibly sits in. If that range crosses zero, the model has not
+        been shown to work — however good the headline looks.</p></div>
+    <div class="learn"><h3>Drawdown and losing runs</h3>
+      <p>A model averaging +0.2R that once lost fourteen trades in a row is unusable on a
+        small account, because you would be wiped out before the average arrived.</p>
+      <p>Worst drawdown is the deepest fall from a high point. Look at it before the
+        expectancy, not after.</p></div>
+    <div class="learn"><h3>Why there is a random control</h3>
+      <p>One model flips a coin, using the same stops and targets as the rest. It shows
+        what risk structure alone produces, with no skill involved. A model that cannot
+        beat it has found nothing.</p></div>
+    <div class="learn"><h3>Where the numbers come from</h3>
+      <p>Every signal was written to disk the moment its candle closed, before the outcome
+        existed. Results fill in later when price reaches stop or target.</p>
+      <p>Nothing here is estimated, adjusted, or typed in by hand.</p></div>
   </div>
-  <div class="sec">
-    <div class="sec-head"><h2>System</h2><span class="note">Services and chain</span></div>
-    <div class="rule"></div>
-    <table><tbody id="sysRows"></tbody></table>
-    <div class="verdict" style="font-size:12.5px;margin-top:14px">
-      Exness quotes reach MetaTrader&nbsp;5 on the Windows box. A read-only expert
-      advisor posts each closed 15-minute bar to this server, which stores it with
-      the spread that was live at the time. Cron scans the file every fifteen minutes,
-      logs anything the models find, and scores what has resolved.
-      <br><br>
-      <strong>Nothing in this chain places an order.</strong>
-    </div>
-  </div>
-  <div class="footnote">
-    Nothing here is deleted. A falsified model with its numbers attached is
-    worth more than a forgotten one — it stops the same idea coming back
-    wearing a different name.
-  </div>
-</div>
-</section>
+  <div class="sec"><h2>Stage 1 <em>observe only</em></h2>
+    <div class="prog"><h3>Mark setups. Log them. Don't trade them.</h3>
+      <p>Thirty logged observations before the platform opens. Write the call down before
+        you know the answer — otherwise you only remember the good ones.</p>
+      <div class="ptr"><div id="oBar" style="width:0%"></div></div>
+      <div class="mono" style="font-size:11px;color:var(--mut);margin-top:9px" id="oTxt">0 / 30</div></div></div>
+  <div class="sec"><h2>System</h2><table><tbody id="svcRows"></tbody></table>
+    <div class="learn" style="margin-top:12px"><p>Exness quotes arrive in MetaTrader 5 on the
+      Windows server. A read-only expert advisor posts each finished 15-minute candle here
+      with the spread that was live at the time. Models scan every fifteen minutes.</p>
+      <p><b style="color:var(--gold)">Nothing in this chain places an order.</b></p></div></div>
+</div></section>
+
+<div class="modal" id="modal"><div class="msheet">
+  <div class="mhead"><b id="mTitle">Replay</b><button class="mclose" id="mClose">✕</button></div>
+  <div class="mbodyx"><canvas id="cReplay" height="420"></canvas>
+    <div class="lv" style="margin-top:12px">
+      <div><i>Entry</i><b class="mono" id="mEntry">—</b></div>
+      <div><i>Stop</i><b class="mono down" id="mStop">—</b></div>
+      <div><i>Target</i><b class="mono up" id="mTgt">—</b></div></div>
+    <div id="mNote" class="note" style="margin-top:4px"></div></div>
+</div></div>
 
 <nav>
-  <button class="on" data-p="research"><span class="ic">◈</span>Research</button>
-  <button data-p="live"><span class="ic">◉</span>Live</button>
-  <button data-p="signals"><span class="ic">◎</span>Signals</button>
-  <button data-p="log"><span class="ic">✎</span>Log</button>
-  <button data-p="archive"><span class="ic">▤</span>Archive</button>
+  <button class="on" data-p="live"><span class="i">◉</span>Live</button>
+  <button data-p="signals"><span class="i">⚡</span>Signals</button>
+  <button data-p="models"><span class="i">▲</span>Models</button>
+  <button data-p="risk"><span class="i">◈</span>Risk</button>
+  <button data-p="learn"><span class="i">◎</span>Learn</button>
 </nav>
 
 <script>
-const MODELS = [
- {id:'M1', status:'falsified', name:'New daily extreme',
-  claim:'Buy a new high for the day after the first two hours. Momentum continuation.',
-  ev:[['Gold 2024–26','+0.17R','pos'],['Sample','n=514','flat'],
-      ['Gold 2012–22','−0.14R','neg'],['Sample','n=2496','flat']],
-  verdict:'Held up on two years of recent gold — positive on two independent files, with the faded mirror at −0.18R exactly as a real effect should look. Then it inverted on a fresh decade with five times the sample, coming in below the random control. <strong>Same shape as CRT: recent regime, not structure.</strong>'},
+const $=i=>document.getElementById(i);
+const H=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f2=v=>v==null?'—':Number(v).toFixed(2);
+const f3=v=>v==null?'—':Number(v).toFixed(3);
+let LAST=null;
 
- {id:'M1b', status:'falsified', name:'Early-session breaks only',
-  claim:'The same model, but only when the break happens in the first half of the session.',
-  ev:[['Recent gold','+0.27R','pos'],['Late breaks','−0.04R','neg'],
-      ['2012–22','−0.18R','neg'],['Sample','n=1905','flat']],
-  verdict:'The cleanest partition we found — a whole-sample split, not a cherry-picked slice, and it matched published work on first-hour predictability. It still failed the decade test. <strong>Chosen in advance, tested honestly, rejected.</strong>'},
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');$('p-'+b.dataset.p).classList.add('on');scrollTo(0,0);
+  if(LAST)render(LAST);
+});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('.mrow .top'); if(t){t.parentElement.classList.toggle('open');return}
+  const s=e.target.closest('.sig'); if(s&&s.dataset.k) replay(s.dataset.k);
+});
+$('mClose').onclick=()=>$('modal').classList.remove('on');
+$('modal').onclick=e=>{if(e.target.id==='modal')$('modal').classList.remove('on')};
 
- {id:'M2', status:'unproven', name:'Last-hour momentum',
-  claim:'If the day is up going into the final hour, the last hour tends to follow. Baltussen et al, 2021.',
-  ev:[['Gold','−0.01R','flat'],['Its own fade','+0.06R','flat'],
-      ['Sample','n=478','flat'],['p-value','0.610','flat']],
-  verdict:'The strongest published intraday effect there is, and this implementation cannot see it. Model and fade both near zero, which means the exits are doing the work. The paper measures close-to-close with no stop; a 1.5-ATR stop inside a one-hour hold destroys the design. <strong>Not falsified — mistested.</strong>'},
+/* ---- chart primitives ---- */
+function frame(cv,h){const d=devicePixelRatio||1,W=cv.clientWidth;
+  cv.width=W*d;cv.height=h*d;const x=cv.getContext('2d');x.scale(d,d);
+  x.clearRect(0,0,W,h);return[x,W,h]}
 
- {id:'M3', status:'unproven', name:'First-hour predictability',
-  claim:'A strong opening hour sets the direction for the rest of the session.',
-  ev:[['Gold','+0.05R','flat'],['Sample','n=254','flat'],
-      ['p-value','0.314','flat'],['Its own fade','−0.01R','flat']],
-  verdict:'Positive but indistinguishable from noise at this sample size. Worth retesting with a longer hold and a wider stop before drawing a line under it.'}
-];
-
-const SUPPORTED = [
- {id:'F1', status:'supported', name:'Longer holds beat shorter ones',
-  claim:'Across every asset tested, expectancy improved as the holding period lengthened.',
-  ev:[['Assets','13 of 13','pos'],['Horizons','1 to 90 days','flat'],
-      ['1-day Sharpe','as low as −1.7','neg'],['90-day Sharpe','up to +0.77','pos']],
-  verdict:'Not a strategy — a constraint. Every asset class improved monotonically with longer holds, and one-day rebalancing was catastrophic everywhere from costs and noise alone. <strong>The most consistent finding in the whole project.</strong>'},
-
- {id:'F2', status:'supported', name:'Buy-and-hold beat every active strategy',
-  claim:'Simply owning the asset outperformed all 52 trend-following combinations tested.',
-  ev:[['Combinations','52','flat'],['Beat buy-and-hold','0','neg'],
-      ['Gold, doing nothing','12.5%/yr','pos'],['Nasdaq, doing nothing','17.7%/yr','pos']],
-  verdict:'Ten years of daily data across thirteen assets. Not one active combination beat holding the thing, after costs. <strong>Worth revisiting every time a new model looks promising.</strong>'},
-
- {id:'F3', status:'supported', name:'Exits redistribute, they do not create',
-  claim:'Changing how a trade is closed changes the shape of results, not the edge.',
-  ev:[['Exit methods','12','flat'],['Kept sign out of sample','2 of 12','neg'],
-      ['Best on fitted data','+0.77R','pos'],['Same, fresh decade','−0.07R','neg']],
-  verdict:'Trailing stops, partial closes, breakevens and timed exits all tested on identical signals. Ten of twelve flipped sign on a fresh decade. <strong>If the entry has no edge, no exit rescues it.</strong>'}
-];
-
-const ARCHIVE = [
- {id:'CRT', status:'falsified', name:'Candle Range Theory',
-  claim:'Price sweeps a range extreme, closes back inside, then reverses to the far side.',
-  ev:[['12 years combined','+0.05R','flat'],['Sample','n=175','flat'],
-      ['Broker data, M15','−0.09R','neg'],['Random-sign test','p=0.66','neg']],
-  verdict:'Tested across three independent datasets, with and without the market-structure-shift confirmation, on hourly and 15-minute execution. Break-even before costs, negative after. Every promising slice — sessions, bias, key levels, range width, reward ratios — inverted out of sample. <strong>The regime explanation was tested on three other markets and died there too.</strong>'},
-
- {id:'20+', status:'falsified', name:'The standard retail playbook',
-  claim:'Opening range breaks, VWAP reversion, engulfing patterns, round numbers, inside bars, gap fades, NR7, rejection wicks, session momentum, Monday effects.',
-  ev:[['Models tested','20+','flat'],['Beat random control','0','neg'],
-      ['Best result','+0.02R','flat'],['Random control','±0.02R','flat']],
-  verdict:'Every model in the widely published toolkit, run on the same rig with the same controls. None cleared a random-entry benchmark on gold. <strong>The playbook sold in courses does not survive its own arithmetic.</strong>'},
-
- {id:'REG', status:'falsified', name:'The trending-regime filter',
-  claim:'Sweep reversals need follow-through, so they should work in trends and fail in chop.',
-  ev:[['Gold gap','+1.94R','pos'],['S&P 500','−0.04R','neg'],
-      ['Bitcoin','−0.09R','neg'],['Nasdaq','+0.07R','flat']],
-  verdict:'A proper hypothesis with a mechanism, stated before the test was run. Spectacular on gold and absent on all three markets it was never fitted to. <strong>A story that explains one dataset and nothing else is not a finding.</strong>'},
-
- {id:'GDE', status:'falsified', name:'Guide filters — EMA, RSI, retest',
-  claim:'Trade only with the 190 EMA; skip overbought breaks; enter on the retest, not the break.',
-  ev:[['Base model','+0.17R','flat'],['EMA-190 gate','+0.15R','neg'],
-      ['RSI 50–70 gate','+0.14R','neg'],['Retest entry','+0.11R','neg']],
-  verdict:'Five specific, codeable rules from two published gold guides, each added singly to a working breakout model. <strong>Every one of them made it worse.</strong>'}
-];
-
-const H = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const STAMP = {falsified:'Falsified', unproven:'Unproven', testing:'Forward testing', supported:'Held up'};
-
-function card(m){
-  const ev = m.ev.map(([k,v,c])=>`<div><i>${H(k)}</i><b class="${c}">${H(v)}</b></div>`).join('');
-  return `<article class="model">
-    <div class="top">
-      <div class="id">${H(m.id)}</div>
-      <div class="meat">
-        <div class="name">${H(m.name)}</div>
-        <div class="claim">${H(m.claim)}</div>
-      </div>
-      <div class="caret">▼</div>
-    </div>
-    <div class="hallmark ${m.status}">${STAMP[m.status]}</div>
-    <div class="body">
-      <div class="evidence">${ev}</div>
-      <div class="verdict">${m.verdict}</div>
-    </div>
-  </article>`;
+function candles(cv,d,oh,ol,lines){
+  if(!cv||!d||d.length<2)return;
+  const [x,W,Hh]=frame(cv,215); d=d.slice(-90);
+  let hi=-1e18,lo=1e18;d.forEach(b=>{hi=Math.max(hi,b.h);lo=Math.min(lo,b.l)});
+  if(oh){hi=Math.max(hi,oh);lo=Math.min(lo,ol)}
+  (lines||[]).forEach(l=>{hi=Math.max(hi,l.v);lo=Math.min(lo,l.v)});
+  const pd=(hi-lo)*.09||1;hi+=pd;lo-=pd;
+  const PL=6,PR=56,PT=10,PB=16,gw=W-PL-PR,gh=Hh-PT-PB;
+  const X=i=>PL+(i+.5)*(gw/d.length),Y=v=>PT+gh-((v-lo)/(hi-lo))*gh;
+  x.strokeStyle='#1B2740';x.lineWidth=1;x.font='9.5px JetBrains Mono,monospace';
+  x.fillStyle='#5F7196';x.textAlign='left';
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Y(v);
+    x.beginPath();x.moveTo(PL,y);x.lineTo(PL+gw,y);x.stroke();
+    x.fillText(v.toFixed(2),PL+gw+6,y+3.5)}
+  if(oh){x.fillStyle='rgba(255,200,61,.07)';x.fillRect(PL,Y(oh),gw,Y(ol)-Y(oh));
+    x.strokeStyle='rgba(255,200,61,.35)';x.setLineDash([2,3]);
+    [oh,ol].forEach(v=>{x.beginPath();x.moveTo(PL,Y(v));x.lineTo(PL+gw,Y(v));x.stroke()});
+    x.setLineDash([])}
+  (lines||[]).forEach(l=>{x.strokeStyle=l.c;x.setLineDash([4,3]);x.lineWidth=1.4;
+    x.beginPath();x.moveTo(PL,Y(l.v));x.lineTo(PL+gw,Y(l.v));x.stroke();x.setLineDash([]);
+    x.fillStyle=l.c;x.font='800 9px JetBrains Mono,monospace';x.fillText(l.n,PL+3,Y(l.v)-3)});
+  const cw=Math.max(1.6,(gw/d.length)*.6);
+  d.forEach((b,i)=>{const u=b.c>=b.o,c=u?'#16E39B':'#FF5470';
+    x.strokeStyle=c;x.fillStyle=c;x.lineWidth=1.1;
+    x.beginPath();x.moveTo(X(i),Y(b.h));x.lineTo(X(i),Y(b.l));x.stroke();
+    const a=Y(Math.max(b.o,b.c)),z=Y(Math.min(b.o,b.c));
+    x.fillRect(X(i)-cw/2,a,cw,Math.max(1.3,z-a));
+    if(b.mark){x.fillStyle='#FFC83D';x.beginPath();
+      x.arc(X(i),Y(b.l)+9,3.5,0,7);x.fill()}});
+  const L=d[d.length-1].c,y=Y(L);
+  x.setLineDash([3,3]);x.strokeStyle='#FFC83D';x.beginPath();
+  x.moveTo(PL,y);x.lineTo(PL+gw,y);x.stroke();x.setLineDash([]);
+  x.fillStyle='#FFC83D';x.fillRect(PL+gw+2,y-8.5,52,17);
+  x.fillStyle='#05070F';x.font='800 10px JetBrains Mono,monospace';
+  x.fillText(L.toFixed(2),PL+gw+5,y+3.5);
 }
 
-document.getElementById('activeModels').innerHTML  = MODELS.map(card).join('');
-document.getElementById('supported').innerHTML     = SUPPORTED.map(card).join('');
-document.getElementById('archiveModels').innerHTML = ARCHIVE.map(card).join('');
+function curve(cv,p){
+  if(!cv)return;const [x,W,Hh]=frame(cv,150);
+  if(!p||p.length<2){x.fillStyle='#5F7196';x.font='12px Inter,sans-serif';
+    x.textAlign='center';x.fillText('No finished trades yet',W/2,Hh/2);return}
+  let hi=Math.max(...p,0),lo=Math.min(...p,0);if(hi===lo){hi+=1;lo-=1}
+  const PL=6,PR=52,PT=10,PB=10,gw=W-PL-PR,gh=Hh-PT-PB;
+  const X=i=>PL+i*(gw/(p.length-1)),Y=v=>PT+gh-((v-lo)/(hi-lo))*gh,z=Y(0);
+  x.strokeStyle='#26365A';x.setLineDash([3,3]);x.beginPath();
+  x.moveTo(PL,z);x.lineTo(PL+gw,z);x.stroke();x.setLineDash([]);
+  const e=p[p.length-1],c=e>=0?'#16E39B':'#FF5470';
+  const g=x.createLinearGradient(0,PT,0,PT+gh);
+  g.addColorStop(0,e>=0?'rgba(22,227,155,.32)':'rgba(255,84,112,.32)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  x.beginPath();x.moveTo(X(0),Y(p[0]));p.forEach((v,i)=>x.lineTo(X(i),Y(v)));
+  x.lineTo(X(p.length-1),z);x.lineTo(X(0),z);x.closePath();x.fillStyle=g;x.fill();
+  x.beginPath();x.moveTo(X(0),Y(p[0]));p.forEach((v,i)=>x.lineTo(X(i),Y(v)));
+  x.strokeStyle=c;x.lineWidth=2.2;x.stroke();
+  x.fillStyle=c;x.font='800 11px JetBrains Mono,monospace';x.textAlign='left';
+  x.fillText((e>=0?'+':'')+e.toFixed(1)+'R',PL+gw+6,Y(e)+4);
+}
 
-document.addEventListener('click', e => {
-  const top = e.target.closest('.model .top');
-  if (top) top.parentElement.classList.toggle('open');
-});
+/* ---- replay ---- */
+function replay(key){
+  if(!LAST)return;
+  const sig=(LAST.signals||[]).find(r=>r.k===key); if(!sig)return;
+  const g=(LAST.feeds||[]).find(f=>f.symbol===sig.sym&&f.series);
+  $('mTitle').textContent=sig.model+' · '+sig.dir;
+  $('mEntry').textContent=f2(sig.entry);
+  $('mStop').textContent=f2(sig.stop);
+  $('mTgt').textContent=f2(sig.target);
+  $('modal').classList.add('on');
+  if(!g){$('mNote').textContent='Chart data for this symbol is not in the current window.';
+    frame($('cReplay'),215);return}
+  const stamp=(sig.ts||'').replace('T',' ').slice(0,16);
+  const i=g.series.findIndex(b=>b.t===stamp);
+  if(i<0){$('mNote').textContent='This signal is older than the chart window kept on the server.';
+    frame($('cReplay'),215);return}
+  const from=Math.max(0,i-22),to=Math.min(g.series.length,i+34);
+  const win=g.series.slice(from,to).map((b,n)=>Object.assign({},b,{mark:(from+n)===i}));
+  candles($('cReplay'),win,null,null,[
+    {v:sig.entry,c:'#38D9FF',n:'ENTRY'},
+    {v:sig.stop,c:'#FF5470',n:'STOP'},
+    {v:sig.target,c:'#16E39B',n:'TARGET'}]);
+  const out=sig.R==null?'still open':(sig.R>0?'reached target, +':'hit stop, ')+f2(sig.R)+'R';
+  $('mNote').textContent='Gold dot marks the candle that triggered it. Outcome: '+out+'.';
+}
 
-document.querySelectorAll('nav button').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('nav button').forEach(x => x.classList.remove('on'));
-    document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
-    b.classList.add('on');
-    document.getElementById('p-' + b.dataset.p).classList.add('on');
-    window.scrollTo(0, 0);
-  });
-});
+/* ---- sizer ---- */
+function sizer(){
+  const bal=parseFloat($('cBal').value), rp=parseFloat($('cRisk').value),
+        st=parseFloat($('cStop').value);
+  if(!bal||!rp||!st||st<=0){$('cLots').textContent='—';
+    $('cNote').textContent='Enter your balance and stop distance.';return}
+  const risk=bal*rp/100;
+  const lots=risk/(st*100);
+  $('cLots').textContent=lots.toFixed(3)+' lots';
+  const min=lots<0.01;
+  $('cNote').innerHTML='Risking $'+risk.toFixed(2)+' with a $'+st.toFixed(2)+' stop.'+
+    (min?' <span style="color:var(--down)">Below the 0.01 minimum — this stop is too wide for this balance.</span>':'');
+}
+['cBal','cRisk','cStop'].forEach(i=>$(i).addEventListener('input',sizer));
 
-const n2 = v => (v==null ? '—' : Number(v).toFixed(2));
-const n3 = v => (v==null ? '—' : Number(v).toFixed(3));
+/* ---- render ---- */
+function render(s){
+  LAST=s;
+  const g=(s.feeds||[]).find(f=>f.symbol.startsWith('XAU'));
+  const bad=Object.values(s.services||{}).some(v=>v!=='active');
+  const stale=(s.feeds||[]).some(f=>f.stale);
+  $('blip').className='blip'+((bad||stale)?' off':'');
+  $('blipTxt').textContent=bad?'service down':stale?'feed stale':'live';
 
-function paint(s){
-  const feeds = s.feeds || [];
-  const stale = feeds.some(f => f.stale);
-  const svcBad = Object.values(s.services||{}).some(v => v !== 'active');
-  const dot = document.getElementById('pulseDot');
-  const txt = document.getElementById('pulseTxt');
-  dot.className = 'dot' + (svcBad ? ' bad' : stale ? ' warn' : '');
-  txt.textContent = svcBad ? 'service down' : stale ? 'feed stale' : 'live';
-
-  if (s.live){
-    document.getElementById('livePrice').innerHTML = n2(s.live.price) + '<small> XAUUSDc</small>';
-    document.getElementById('dayHi').textContent = n2(s.live.day_high);
-    document.getElementById('dayLo').textContent = n2(s.live.day_low);
-    document.getElementById('spread').textContent = '$' + n3(s.live.spread);
-    document.getElementById('watching').textContent = s.live.watching
-      ? 'Price is ' + s.live.watching + ', ' + s.live.bars_today + ' bars into the day.'
-      : 'Waiting for the feed';
+  if(g){
+    $('hSym').textContent=g.symbol+' · 15 min';
+    $('hPx').textContent=f2(g.price);
+    const c=g.change||0,pc=g.price?c/g.price*100:0;
+    $('hChg').className='chg mono '+(c>0?'up':c<0?'down':'neu');
+    $('hChg').textContent=(c>0?'▲ +':c<0?'▼ ':'')+f2(c)+'   '+(c>0?'+':'')+pc.toFixed(2)+'%';
+    $('rLo').textContent=f2(g.day_low);$('rHi').textContent=f2(g.day_high);
+    if(g.day_high>g.day_low){const p=(g.price-g.day_low)/(g.day_high-g.day_low)*100;
+      $('rPin').style.left='calc('+Math.max(0,Math.min(100,p))+'% - 1.5px)'}
+    $('stTxt').textContent='Price is '+(g.state||'settling')+', '+(g.bars_today||0)+' candles into the day.';
+    $('tSpr').textContent='$'+f3(g.spread);
+    $('tBars').textContent=g.bars_today||'—';
+    $('tAge').textContent=g.age_min==null?'—':g.age_min+' min';
+    $('tAge').className='mono '+(g.stale?'down':'up');
+    candles($('cPrice'),g.series,g.open_hi,g.open_lo);
+    $('cInfo').textContent='last '+Math.min(90,(g.series||[]).length)+' candles';
   }
 
-  document.getElementById('feedRows').innerHTML = feeds.map(f => `
-    <tr><td>${H(f.symbol)}</td><td class="r">${(f.bars||0).toLocaleString()}</td>
-    <td class="r">${H(f.last||'—')}</td>
-    <td class="r ${f.stale?'neg':'pos'}">${f.age_min==null?'—':f.age_min+'m'}</td></tr>`).join('')
-    || '<tr><td colspan="4">No feeds found.</td></tr>';
-  const g = feeds.find(f => f.symbol.indexOf('XAU') === 0);
-  document.getElementById('feedAge').textContent =
-    g && g.age_min!=null ? g.age_min + ' min old' : '—';
+  $('newsBox').innerHTML=(s.news||[]).length?(s.news||[]).map(n=>{
+    const past=n.mins<0,h=Math.abs(n.mins)/60;
+    const w=past?'passed':h<1?Math.round(n.mins)+'m':Math.round(h)+'h';
+    return `<div class="nrow"><div class="imp ${n.impact==='High'?'high':''}"></div>
+      <div class="txt"><div class="ttl">${H(n.title)}</div>
+      <div class="sub">${H(n.cur)} · ${H(n.sast)} SAST</div></div>
+      <div class="in" style="color:${past?'var(--dim)':n.impact==='High'?'var(--down)':'var(--gold)'}">${w}</div></div>`;
+  }).join(''):'<div style="color:var(--mut);font-size:12.5px">No high-impact events in the next 30 hours.</div>';
 
-  const f = (s.signals||{}).forward || {};
-  const box = document.getElementById('fwdBox');
-  if (!f.resolved){
-    box.innerHTML = `<div class="empty"><span class="big">Nothing resolved yet</span>
-      ${f.logged||0} signal${f.logged===1?'':'s'} logged since forward testing began.
-      Results appear here as each one hits its stop or target.</div>`;
-  } else {
-    const cls = f.exp > 0 ? 'pos' : f.exp < 0 ? 'neg' : 'flat';
-    box.innerHTML = `<div class="strip" style="grid-template-columns:repeat(4,1fr)">
-      <div><i>Logged</i><b>${f.logged}</b></div>
-      <div><i>Resolved</i><b>${f.resolved}</b></div>
-      <div><i>Win rate</i><b>${(f.win*100).toFixed(0)}%</b></div>
-      <div><i>Per trade</i><b class="${cls}">${f.exp>0?'+':''}${n2(f.exp)}R</b></div></div>
-      <div class="verdict" style="font-size:12.5px">Under thirty resolved signals,
-      treat this as a count rather than a result.</div>`;
-  }
+  $('fUpd').textContent=(s.clock_sast||'')+' SAST';
+  $('fRows').innerHTML=(s.feeds||[]).map(f=>
+    `<tr><td><b>${H(f.symbol)}</b></td><td class="r mono">${f2(f.price)}</td>
+     <td class="r mono" style="color:${f.stale?'var(--down)':'var(--up)'}">${f.age_min}m</td>
+     <td class="r mono" style="color:var(--dim)">${(f.bars||0).toLocaleString()}</td></tr>`).join('');
 
-  const rec = (s.signals||{}).recent || [];
-  document.getElementById('sigRows').innerHTML = rec.map(r => {
-    const res = r.R==null ? '<span class="flat">open</span>'
-      : `<span class="${r.R>0?'pos':'neg'}">${r.R>0?'+':''}${n2(r.R)}R</span>`;
-    return `<tr><td>${H((r.ts||'').replace('T',' ').slice(5,16))}</td>
-      <td>${H(r.dir||'')}</td><td class="r">${n2(r.entry)}</td>
-      <td class="r">${res}</td></tr>`;
-  }).join('') || '<tr><td colspan="4">No forward signals yet.</td></tr>';
+  const T=s.totals||{};
+  $('sTot').textContent=(T.logged||0).toLocaleString();
+  $('sRes').textContent=(T.resolved||0).toLocaleString();
+  $('sOpen').textContent=(T.open||0).toLocaleString();
 
-  const o = s.observations || {count:0, required:30};
-  document.getElementById('obsBar').style.width = Math.min(100, o.count/o.required*100) + '%';
-  document.getElementById('obsCount').textContent = `${o.count} / ${o.required} observations`;
+  $('sigList').innerHTML=(s.signals||[]).map(r=>{
+    const d=(r.dir||'').toLowerCase(),done=r.R!=null;
+    const res=done?`<span class="res ${r.R>0?'up':'down'}">${r.R>0?'+':''}${f2(r.R)}R</span>`
+      :(r.live_r!=null?`<span class="res ${r.live_r>=0?'up':'down'}">${r.live_r>0?'+':''}${f2(r.live_r)}R now</span>`
+        :'<span style="color:var(--mut)">open</span>');
+    const hr=r.hit_rate;
+    const prob=hr==null?'':`<div class="prob"><div class="ptrack"><div style="width:${(hr*100).toFixed(0)}%"></div></div>
+      <span class="pv">${(hr*100).toFixed(0)}% hit · ${r.sample} trades</span></div>`;
+    return `<div class="sig ${d}" data-k="${H(r.k)}">
+      <div class="r1"><span class="nm">${H(r.model)}</span><span class="tag ${d}">${H(d)}</span></div>
+      <div class="lv"><div><i>Entry</i><b class="mono">${f2(r.entry)}</b></div>
+      <div><i>Stop</i><b class="mono down">${f2(r.stop)}</b></div>
+      <div><i>Target</i><b class="mono up">${f2(r.target)}</b></div></div>${prob}
+      <div class="sfoot"><span class="mono">${H((r.ts||'').replace('T',' ').slice(5,16))} · ${H(r.sym||'')}</span>${res}</div></div>`;
+  }).join('')||'<div class="empty"><b>No signals yet</b>They appear the moment a candle closes on a setup.</div>';
 
-  const rows = [];
-  for (const [k,v] of Object.entries(s.services||{})) rows.push([k, v, v==='active'?'pos':'neg']);
-  rows.push(['state published', (s.generated||'').replace('T',' ').slice(0,16), 'flat']);
-  document.getElementById('sysRows').innerHTML = rows.map(([k,v,c]) =>
-    `<tr><td>${H(k)}</td><td class="r ${c}">${H(v)}</td></tr>`).join('');
+  const M=s.models||[],mx=Math.max(.3,...M.map(m=>Math.abs(m.exp||0)));
+  $('mList').innerHTML=M.map(m=>{
+    const e=m.exp,has=e!=null,pos=(e||0)>=0,w=has?Math.min(50,Math.abs(e)/mx*50):0;
+    const ctrl=m.name.indexOf('RANDOM')>=0;
+    const ci=(m.ci_lo!=null)?`<div><i>True value likely between</i><b class="mono" style="font-size:12px">${f2(m.ci_lo)}R … ${f2(m.ci_hi)}R</b></div>`:'';
+    const dd=(m.max_dd!=null)?`<div><i>Worst drawdown</i><b class="mono down">${f2(m.max_dd)}R</b></div>`:'';
+    const stk=(m.worst_streak!=null)?`<div><i>Longest losing run</i><b class="mono">${m.worst_streak}</b></div>`:'';
+    const str=m.stress?`<div><i>If spread doubles</i><b class="mono ${m.stress.x2>=0?'up':'down'}">${m.stress.x2>0?'+':''}${f2(m.stress.x2)}R</b></div>`:'';
+    return `<div class="mrow${ctrl?' ctrl':''}"><div class="top">
+      <div class="t1"><span class="nm">${H(m.name)}</span>
+      <span class="ex ${has?(pos?'up':'down'):'neu'}">${has?(pos?'+':'')+f2(e)+'R':'no data'}</span></div>
+      <div class="mbar"><div class="z"></div><div class="v" style="left:${pos?50:50-w}%;width:${w}%;
+        background:${ctrl?'var(--violet)':pos?'var(--up)':'var(--down)'}"></div></div>
+      <div class="mstat"><span>${m.n} finished</span>
+      <span>${m.win!=null?(m.win*100).toFixed(0)+'% hit':'—'}</span>
+      <span>${m.open} open</span><span>${m.total>0?'+':''}${m.total}R</span>
+      ${m.significant?'<span style="color:var(--up)">clears zero</span>':''}</div></div>
+      <div class="mbody">${H(m.what||'')}<div class="g">${ci}${dd}${stk}${str}
+      <div><i>Best trade</i><b class="mono up">${m.best!=null?'+'+f2(m.best)+'R':'—'}</b></div>
+      <div><i>Worst trade</i><b class="mono down">${m.worst!=null?f2(m.worst)+'R':'—'}</b></div></div></div></div>`;
+  }).join('')||'<div class="empty"><b>No models reporting</b>Nothing has finished a trade yet.</div>';
+
+  curve($('cEq'),s.equity);
+  const er=s.equity_risk||{};
+  $('eDD').textContent=er.max_dd!=null?f2(er.max_dd)+'R':'—';
+  $('eStreak').textContent=er.worst_streak!=null?er.worst_streak:'—';
+  $('eWin').textContent=er.best_streak!=null?er.best_streak:'—';
+
+  const hrs=s.hours||[];
+  const hmx=Math.max(.05,...hrs.map(h=>Math.abs(h.exp)));
+  $('heatBox').innerHTML=hrs.map(h=>{
+    const a=Math.min(1,Math.abs(h.exp)/hmx), pos=h.exp>=0;
+    const bg=pos?`rgba(22,227,155,${.12+a*.5})`:`rgba(255,84,112,${.12+a*.5})`;
+    return `<div class="hcell" style="background:${bg}">
+      <div class="hh">${String(h.h).padStart(2,'0')}h</div>
+      <div class="hv ${pos?'up':'down'}">${h.exp>0?'+':''}${h.exp.toFixed(2)}</div></div>`;
+  }).join('')||'<div style="color:var(--mut);font-size:12.5px;grid-column:1/-1">Not enough finished trades yet.</div>';
+
+  $('lapRows').innerHTML=(s.overlap||[]).map(o=>
+    `<tr><td style="font-size:11.5px">${H(o.pair)}</td>
+     <td class="r mono">${o.together}×</td></tr>`).join('')
+    ||'<tr><td style="color:var(--mut);font-size:12.5px">No models firing together yet.</td></tr>';
+
+  const o=s.observations||{count:0,required:30};
+  $('oBar').style.width=Math.min(100,o.count/o.required*100)+'%';
+  $('oTxt').textContent=o.count+' / '+o.required+' observations logged';
+
+  $('svcRows').innerHTML=Object.entries(s.services||{}).map(([k,v])=>
+    `<tr><td>${H(k)}</td><td class="r mono" style="color:${v==='active'?'var(--up)':'var(--down)'}">${H(v)}</td></tr>`)
+    .join('')+`<tr><td>last update</td><td class="r mono" style="color:var(--mut)">${H(s.clock_sast||'')} SAST</td></tr>`;
 }
 
-function refresh(){
-  fetch('state.json?t=' + Date.now())
-    .then(r => r.ok ? r.json() : Promise.reject(r.status))
-    .then(paint)
-    .catch(() => {
-      document.getElementById('pulseDot').className = 'dot bad';
-      document.getElementById('pulseTxt').textContent = 'no state';
-    });
-}
-refresh();
-setInterval(refresh, 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+function tick(){fetch('state.json?t='+Date.now()).then(r=>r.ok?r.json():Promise.reject())
+  .then(render).catch(()=>{$('blip').className='blip off';$('blipTxt').textContent='no data'})}
+tick();setInterval(tick,20000);
+addEventListener('resize',()=>LAST&&render(LAST));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
 </script>
 </body>
 </html>

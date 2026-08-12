@@ -21,6 +21,9 @@ background-image:radial-gradient(1000px 500px at 50% -10%,rgba(255,200,61,.07),t
 h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.02em}
 header{padding:calc(13px + env(safe-area-inset-top)) var(--pad) 12px;display:flex;
 justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.brandwrap{display:flex;align-items:center;gap:9px}
+.mark{width:26px;height:26px;flex:none;filter:drop-shadow(0 2px 7px rgba(255,200,61,.4))}
+.mark svg{width:100%;height:100%;display:block}
 .brand{font-size:15px;font-weight:900}
 .brand span{background:linear-gradient(90deg,var(--gold),var(--gold2));
 -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -165,16 +168,40 @@ border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr
 padding-bottom:env(safe-area-inset-bottom);z-index:40}
 nav button{background:none;border:0;color:var(--dim);padding:10px 2px 9px;cursor:pointer;
 font-size:9.5px;font-weight:800;font-family:inherit}
-nav button .i{display:block;font-size:17px;margin-bottom:3px}
+nav button .i{display:block;margin:0 auto 4px;width:21px;height:21px}
+nav button .i svg{width:100%;height:100%;display:block;opacity:.85}
 nav button.on{color:var(--gold)}
+nav button.on .i svg{opacity:1;filter:drop-shadow(0 0 6px rgba(255,200,61,.45))}
+footer{padding:26px var(--pad) 30px;text-align:center;border-top:1px solid var(--line);
+  margin-top:26px;background:linear-gradient(180deg,transparent,rgba(255,200,61,.03))}
+footer .fbrand{font-size:14px;font-weight:900;letter-spacing:-.01em}
+footer .fbrand span{background:linear-gradient(90deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+footer .fby{font-size:11.5px;color:var(--mut);margin-top:6px;font-weight:600;letter-spacing:.02em}
+footer .fnote{font-size:10px;color:var(--dim);margin-top:9px;letter-spacing:.09em;
+  text-transform:uppercase;font-weight:700}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </style>
 </head>
 <body>
 
-<header><div class="brand">Heavenly <span>Gold</span> Lab</div>
-<div class="chip"><span class="blip" id="blip"></span><span id="blipTxt">live</span></div></header>
+<header>
+  <div class="brandwrap">
+    <span class="mark">
+      <svg viewBox="0 0 28 28" fill="none">
+        <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#FFD979"/><stop offset="0.5" stop-color="#FFC83D"/>
+          <stop offset="1" stop-color="#E08A1E"/></linearGradient></defs>
+        <path d="M6 18.5L8.5 11h11L22 18.5z" fill="url(#gg)"/>
+        <path d="M8.5 11h11L18 7.5H10z" fill="#FFE7A8" opacity=".95"/>
+        <path d="M6 18.5h16" stroke="#8A5B12" stroke-width="1.1" opacity=".55"/>
+      </svg>
+    </span>
+    <span class="brand">Heavenly <span>Gold</span> Lab</span>
+  </div>
+  <div class="chip"><span class="blip" id="blip"></span><span id="blipTxt">live</span></div>
+</header>
 
 <section class="page on" id="p-live"><div class="wrap">
   <div class="hero"><div class="sym" id="hSym">XAUUSDc · 15 min</div>
@@ -296,12 +323,46 @@ nav button.on{color:var(--gold)}
     <div id="mNote" class="note" style="margin-top:4px"></div></div>
 </div></div>
 
+<footer>
+  <div class="fbrand">Heavenly <span>Gold</span> Lab</div>
+  <div class="fby">Designed by Lesley · Heavenly Guard</div>
+  <div class="fnote">Research tool. Not financial advice.</div>
+</footer>
+
 <nav>
-  <button class="on" data-p="live"><span class="i">◉</span>Live</button>
-  <button data-p="signals"><span class="i">⚡</span>Signals</button>
-  <button data-p="models"><span class="i">▲</span>Models</button>
-  <button data-p="risk"><span class="i">◈</span>Risk</button>
-  <button data-p="learn"><span class="i">◎</span>Learn</button>
+  <button class="on" data-p="live"><span class="i">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 16l4-7 4 4 4-9 6 12"/><circle cx="21" cy="16" r="1.6" fill="currentColor"/>
+    </svg></span>Live</button>
+
+  <button data-p="signals"><span class="i">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13 2L4.5 13.5H11l-1 8.5 8.5-11.5H12z"/>
+    </svg></span>Signals</button>
+
+  <button data-p="models"><span class="i">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="12" width="4" height="9" rx="1"/>
+      <rect x="10" y="7" width="4" height="14" rx="1"/>
+      <rect x="17" y="3" width="4" height="18" rx="1"/>
+    </svg></span>Models</button>
+
+  <button data-p="risk"><span class="i">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2l8 4v6c0 5-3.4 8.9-8 10-4.6-1.1-8-5-8-10V6z"/>
+      <path d="M12 8v4.5M12 16h.01"/>
+    </svg></span>Risk</button>
+
+  <button data-p="learn"><span class="i">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 6.5C3 5 4 4 5.5 4H10a2.5 2.5 0 012.5 2.5V20a2 2 0 00-2-2H5.5A2.5 2.5 0 013 15.5z"/>
+      <path d="M21 6.5C21 5 20 4 18.5 4H14a2.5 2.5 0 00-2.5 2.5V20a2 2 0 012-2h5A2.5 2.5 0 0021 15.5z"/>
+    </svg></span>Learn</button>
 </nav>
 
 <script>

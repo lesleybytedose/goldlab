@@ -14,6 +14,7 @@ import csv, glob, hashlib, json, os, random, sys
 from datetime import datetime, timezone, timedelta
 
 SAST = timezone(timedelta(hours=2))
+FEED_TZ = timezone.utc  # EA sends broker time = UTC
 HOME = os.path.expanduser("~/goldlab")
 RAW = os.path.join(HOME, "data/raw")
 LOG = os.path.join(HOME, "logs/live_signals.jsonl")
@@ -26,7 +27,7 @@ def load(path):
     with open(path) as f:
         for r in csv.DictReader(f):
             try:
-                d = datetime.fromisoformat(f"{r['date']} {r['time']}").replace(tzinfo=SAST)
+                d = datetime.fromisoformat(f"{r['date']} {r['time']}").replace(tzinfo=FEED_TZ)
                 rows.append([d, float(r["open"]), float(r["high"]),
                              float(r["low"]), float(r["close"]),
                              float(r.get("spread") or 0)])
@@ -82,7 +83,7 @@ def m1_fade(b, a, sess):
 def m4_crt(b, a, sess):
     """Candle Range Theory: sweep a prior range extreme, close back inside."""
     out = []
-    for i in range(30, len(b) - 1):
+    for i in range(30, len(b)):
         if a[i] <= 0:
             continue
         hi = max(x[2] for x in b[i-8:i-1])
@@ -103,7 +104,7 @@ def m5_orderblock(b, a, sess):
     Trade the first return to that candle's body, in the impulse direction.
     """
     out = []
-    for i in range(30, len(b) - 1):
+    for i in range(30, len(b)):
         if a[i] <= 0:
             continue
         # impulse: 3 bars covering 2+ ATR in one direction
@@ -132,7 +133,7 @@ def m5_orderblock(b, a, sess):
 def m6_spike(b, a, sess):
     """Range expansion: a bar 2.5x average, trade its direction."""
     out = []
-    for i in range(25, len(b) - 1):
+    for i in range(25, len(b)):
         if a[i] <= 0:
             continue
         if (b[i][2] - b[i][3]) < 2.5 * a[i]:
@@ -145,8 +146,9 @@ def m7_london(b, a, sess):
     """Break of the first hour of the London session."""
     out = []
     for _, idxs in sess.items():
-        first = [i for i in idxs if 9 <= b[i][0].hour < 10]
-        rest = [i for i in idxs if 10 <= b[i][0].hour < 16]
+        # London opens 08:00 UTC. Trade the break of its first hour.
+        first = [i for i in idxs if 8 <= b[i][0].hour < 9]
+        rest  = [i for i in idxs if 9 <= b[i][0].hour < 15]
         if len(first) < 3 or not rest:
             continue
         hi = max(b[i][2] for i in first)
@@ -163,7 +165,7 @@ def m7_london(b, a, sess):
 def m8_contraction(b, a, sess):
     """Six quiet bars, then a break either side."""
     out = []
-    for i in range(30, len(b) - 1):
+    for i in range(30, len(b)):
         if a[i] <= 0:
             continue
         w = b[i-6:i]
@@ -181,7 +183,7 @@ def m8_contraction(b, a, sess):
 def m0_random(b, a, sess):
     """Control. Deterministic per bar so it never changes between runs."""
     out = []
-    for i in range(30, len(b) - 1, 24):
+    for i in range(30, len(b), 6):
         seed = int(hashlib.md5(str(b[i][0]).encode()).hexdigest()[:8], 16)
         out.append((i, "long" if seed % 2 else "short", 1.0, 1.8))
     return out
@@ -220,7 +222,7 @@ def write_log(rows):
 
 
 def score(sig, b, idx_by_ts):
-    """Walk forward. Returns R, or None if unresolved."""
+    """Walk forward. Returns (R, bars_held), or None if unresolved."""
     i = idx_by_ts.get(sig["ts"])
     if i is None:
         return None
@@ -233,13 +235,13 @@ def score(sig, b, idx_by_ts):
     for k in range(i + 1, min(i + 1 + MAXHOLD, len(b))):
         h, l = b[k][2], b[k][3]
         if sig["dir"] == "long":
-            if l <= st: return round(-1.0 - cost, 3)
-            if h >= tg: return round(rr - cost, 3)
+            if l <= st: return round(-1.0 - cost, 3), k - i
+            if h >= tg: return round(rr - cost, 3), k - i
         else:
-            if h >= st: return round(-1.0 - cost, 3)
-            if l <= tg: return round(rr - cost, 3)
+            if h >= st: return round(-1.0 - cost, 3), k - i
+            if l <= tg: return round(rr - cost, 3), k - i
     if len(b) - i > MAXHOLD + 1:
-        return 0.0
+        return 0.0, MAXHOLD
     return None
 
 
@@ -252,12 +254,12 @@ def detect(feedname, backfill=False):
         return 0
     a = atr(b)
     sess = sessions(b)
-    sym = feedname.split("_")[0]
+    sym = feedname.replace("_M15_live.csv", "").replace("_M15.csv", "")
 
     rows = read_log()
     known = {r["k"] for r in rows if "k" in r}
     idx_by_ts = {x[0].isoformat(): i for i, x in enumerate(b)}
-    cutoff = b[-1][0] - timedelta(days=3)      # only recent bars unless backfilling
+    cutoff = b[-1][0] - timedelta(hours=2)      # only recent bars unless backfilling
 
     added = 0
     for name, fn in MODELS.items():
@@ -284,7 +286,7 @@ def detect(feedname, backfill=False):
                 atr=round(u, 3),
                 spread=round(b[i][5] if b[i][5] > 0 else u*0.05, 4),
                 phase="backfill" if backfill else "forward",
-                logged=datetime.now(SAST).isoformat(timespec="seconds"),
+                logged=datetime.now(FEED_TZ).isoformat(timespec="seconds"),
                 R=None,
             )
             rows.append(sig)
@@ -296,7 +298,7 @@ def detect(feedname, backfill=False):
         if r.get("sym") == sym and r.get("R") is None:
             v = score(r, b, idx_by_ts)
             if v is not None:
-                r["R"] = v
+                r["R"], r["held"] = v
     write_log(rows)
     return added
 
@@ -352,10 +354,13 @@ def main():
     total = 0
     for f in feeds:
         total += detect(f, backfill)
-    stamp = datetime.now(SAST).strftime("%Y-%m-%d %H:%M")
+    stamp = datetime.now(FEED_TZ).strftime("%Y-%m-%d %H:%M")
     print(f"  {stamp}  {total} new signal(s) across {len(feeds)} feed(s)"
           f"{'  [backfill]' if backfill else ''}")
 
+
+from book_models_live import BOOK_LIVE_MODELS
+MODELS.update(BOOK_LIVE_MODELS)
 
 if __name__ == "__main__":
     main()

@@ -224,3 +224,42 @@ BOOK_LIVE_MODELS = {
     "RANDOM CTRL 2.0R":   bk_random_20,
     "RANDOM CTRL 1.5R":   bk_random_15,
 }
+
+
+# ------------------------------------------ sweep-nominated variants
+# Promoted 2026-08-16 from sweep.py backfill nominations. One variant per
+# family, run alongside the original. Declined the same day: Boom CRT
+# (margin 0.007R), V75 Order block (+0.019R exp, dies under spread x2),
+# XAG Range spike (n=65, single symbol). MA/ATR band (50, 0.6) was
+# nominated on XAUUSDm but is already deployed unchanged.
+
+def bk_contraction_v2(b, a, sess, bars=4, tight=1.6):
+    """Contraction break variant: 4 quiet bars, looser 1.6-ATR tightness.
+    Nominated on Crash_1000 (n=395) with near-identical params on Boom."""
+    out = []
+    for i in range(30, len(b)):
+        if a[i] <= 0:
+            continue
+        w = b[i - bars:i]
+        hi = max(x[2] for x in w)
+        lo = min(x[3] for x in w)
+        if (hi - lo) > tight * a[i]:
+            continue
+        c = b[i][4]
+        if c > hi:
+            out.append((i, "long", 1.0, 2.0))
+        elif c < lo:
+            out.append((i, "short", 1.0, 2.0))
+    return out
+
+
+def bk_donchian_p10(b, a, sess):
+    """Donchian SAR variant at p=10. Nominated on Boom_1000 (n=279),
+    echoed on XAGUSD. The deployed p=20 keeps running alongside."""
+    return bk_donchian_sar(b, a, sess, p=10)
+
+
+BOOK_LIVE_MODELS.update({
+    "Contraction v2 b4t1.6": bk_contraction_v2,
+    "Donchian SAR p10":      bk_donchian_p10,
+})

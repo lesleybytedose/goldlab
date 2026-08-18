@@ -245,6 +245,35 @@ def score(sig, b, idx_by_ts):
     return None
 
 
+
+def covs(b, a, i, d):
+    """Context stamped on every signal at logging time — including the
+    controls'. Lets gate hypotheses (trend-alignment, session window,
+    vol regime) be tested later on pre-registered cuts instead of fished."""
+    out = {}
+    try:
+        if i >= 200:
+            s50 = sum(x[4] for x in b[i-49:i+1]) / 50
+            s200 = sum(x[4] for x in b[i-199:i+1]) / 200
+            c = b[i][4]
+            trend = ("up" if c > s200 and s50 > s200 else
+                     "down" if c < s200 and s50 < s200 else "mixed")
+            out["trend"] = trend
+            if trend != "mixed":
+                out["with_trend"] = (d == "long") == (trend == "up")
+        if i >= 45:
+            fast = sum(max(b[k][2]-b[k][3],
+                           abs(b[k][2]-b[k-1][4]),
+                           abs(b[k][3]-b[k-1][4])) for k in range(i-4, i+1)) / 5
+            out["vol"] = ("expanding" if fast > 1.3*a[i] else
+                          "quiet" if fast < 0.7*a[i] else "normal")
+        out["hour"] = b[i][0].hour
+        out["dow"] = b[i][0].strftime("%a")
+    except Exception:
+        pass
+    return out
+
+
 def detect(feedname, backfill=False):
     path = os.path.join(RAW, feedname)
     if not os.path.exists(path):
@@ -286,6 +315,8 @@ def detect(feedname, backfill=False):
                 atr=round(u, 3),
                 spread=round(b[i][5] if b[i][5] > 0 else u*0.05, 4),
                 phase="backfill" if backfill else "forward",
+                **covs(b, a, i, d),
+                spread_pct=round((b[i][5] if b[i][5] > 0 else u*0.05) / (satr*u), 3),
                 logged=datetime.now(FEED_TZ).isoformat(timespec="seconds"),
                 R=None,
             )

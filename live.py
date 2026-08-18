@@ -30,7 +30,8 @@ def load(path):
                 d = datetime.fromisoformat(f"{r['date']} {r['time']}").replace(tzinfo=FEED_TZ)
                 rows.append([d, float(r["open"]), float(r["high"]),
                              float(r["low"]), float(r["close"]),
-                             float(r.get("spread") or 0)])
+                             float(r.get("spread") or 0),
+                             float(r.get("volume") or 0)])
             except Exception:
                 pass
     rows.sort(key=lambda b: b[0])

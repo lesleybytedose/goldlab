@@ -75,44 +75,69 @@ def spikes(b, a, mult=5.0):
     return out
 
 
-def test_arithmetic(b, sp):
-    """Do the bleed and the jumps net to zero? The decisive Boom/Crash test."""
+def test_arithmetic(b, sp, boot=400):
+    """Do the bleed and the jumps net to zero?
+
+    A point estimate is not enough: 5,000 bars is ~3.5 days, and a single
+    window can drift by chance. Bootstrap the per-bar move to get a 90%
+    interval on the net. If that interval spans zero, the drift is not
+    established, whatever the point estimate says.
+    """
+    import random as _r
     if len(sp) < 5:
         return None
     idx = {i for i, _, _ in sp}
-    jump = sum(m for _, _, m in sp)
-    bleed = sum(b[i][3] - b[i][0] for i in range(len(b)) if i not in idx)
+    moves = [b[i][3] - b[i][0] for i in range(len(b))]
+    jump = sum(moves[i] for i in idx)
+    bleed = sum(moves[i] for i in range(len(b)) if i not in idx)
     net = jump + bleed
+    n = len(moves)
+    _r.seed(17)
+    sims = []
+    for _ in range(boot):
+        s = sum(moves[_r.randrange(n)] for _ in range(n))
+        sims.append(s / n * 1000)
+    sims.sort()
+    lo, hi = sims[int(0.05 * boot)], sims[int(0.95 * boot) - 1]
     spread = statistics.median([x[4] for x in b if x[4] > 0] or [0])
-    return dict(jump=jump, bleed=bleed, net=net,
-                net_per_1k=net / len(b) * 1000,
-                spread=spread,
-                # what a round trip costs, in the same units
-                cost_per_1k=spread * 2 * (1000 / max(1, len(b) / max(1, len(sp)))))
+    return dict(jump=jump, bleed=bleed, net=net, net_per_1k=net / n * 1000,
+                ci_lo=lo, ci_hi=hi, spread=spread,
+                established=(lo > 0 and hi > 0) or (lo < 0 and hi < 0))
 
 
 def test_hazard(sp, nbins=5):
-    """P(spike now | none yet) against elapsed time. Flat = memoryless."""
+    """P(spike at k | not yet) against elapsed time. Flat = memoryless.
+
+    NOTE ON A BUG THAT WAS HERE: the first version bucketed gaps by
+    QUANTILE. With equal counts per bucket and a shrinking at-risk pool,
+    the rates are forced to 20/25/33/50/100% for ANY distribution - the
+    test could never report "flat". Fixed-width bins on the elapsed axis
+    are the correct estimator, and the last bin is dropped because every
+    surviving gap must terminate there by construction.
+    """
     gaps = []
     last = None
     for i, _, _ in sp:
         if last is not None:
             gaps.append(i - last)
         last = i
-    if len(gaps) < 20:
+    if len(gaps) < 30:
         return None
-    gaps.sort()
-    qs = [gaps[int(len(gaps) * k / nbins)] for k in range(1, nbins)]
+    top = sorted(gaps)[int(len(gaps) * 0.9)]          # ignore the long tail
+    w = max(1, top // nbins)
     buckets = []
     for k in range(nbins):
-        lo = 0 if k == 0 else qs[k-1]
-        hi = qs[k] if k < nbins - 1 else max(gaps) + 1
+        lo, hi = k * w, (k + 1) * w
         at_risk = sum(1 for g in gaps if g >= lo)
         fired = sum(1 for g in gaps if lo <= g < hi)
-        buckets.append((lo, hi, fired / at_risk if at_risk else 0, at_risk))
-    return dict(gaps=gaps, buckets=buckets,
-                mean=statistics.mean(gaps), median=statistics.median(gaps),
-                sd=statistics.pstdev(gaps))
+        if at_risk >= 15:                              # enough to estimate
+            rate = fired / at_risk
+            se = math.sqrt(max(rate * (1 - rate), 1e-9) / at_risk)
+            buckets.append((lo, hi, rate, at_risk, se))
+    m = statistics.mean(gaps)
+    sd = statistics.pstdev(gaps)
+    return dict(gaps=gaps, buckets=buckets, mean=m, median=statistics.median(gaps),
+                sd=sd, cv=sd / m if m else 0)
 
 
 def test_size_vs_wait(sp):
@@ -207,11 +232,17 @@ def probe(path):
         print(f"     jumps total {ar['jump']:+,.1f}   bleed total {ar['bleed']:+,.1f}")
         print(f"     net {ar['net']:+,.1f}  ({ar['net_per_1k']:+.2f} per 1000 bars)")
         print(f"     median spread {ar['spread']:.3f}")
-        if abs(ar['net_per_1k']) < ar['spread'] * 2:
-            print(f"     -> nets to ~zero within spread. No entry rule can fix this.")
+        print(f"     90% CI on net per 1000 bars: [{ar['ci_lo']:+.2f}, "
+              f"{ar['ci_hi']:+.2f}]")
+        if not ar["established"]:
+            print(f"     -> interval spans zero: net drift NOT established in "
+                  f"this window.")
+        elif abs(ar['net_per_1k']) < ar['spread'] * 2:
+            print(f"     -> drift is real but smaller than 2x spread. Not "
+                  f"harvestable.")
         else:
-            print(f"     -> NET DRIFT survives spread. Direction of drift is the "
-                  f"only thing worth testing.")
+            print(f"     -> NET DRIFT established and larger than spread. "
+                  f"Worth pre-registering a direction test.")
             flags.append("net drift")
 
     hz = test_hazard(sp)
@@ -219,19 +250,22 @@ def probe(path):
         print(f"\n  2. HAZARD RATE (memoryless?)  gaps mean {hz['mean']:.0f} "
               f"median {hz['median']:.0f} sd {hz['sd']:.0f}")
         rates = []
-        for lo, hi, rate, at_risk in hz["buckets"]:
-            print(f"     waited {lo:>4}-{hi:<5} bars: fire rate {rate:>6.1%}  "
-                  f"(n={at_risk})")
-            rates.append(rate)
-        spread_r = max(rates) - min(rates)
-        # exponential (memoryless) has sd ~ mean
-        ratio = hz["sd"] / hz["mean"] if hz["mean"] else 0
-        print(f"     sd/mean = {ratio:.2f}  (1.00 = exponential = memoryless)")
-        if spread_r > 0.35:
-            print(f"     -> hazard is NOT flat: waiting changes the odds.")
-            flags.append("hazard not flat")
-        else:
-            print(f"     -> hazard broadly flat: elapsed time carries little info.")
+        for lo, hi, rate, at_risk, se in hz["buckets"]:
+            print(f"     waited {lo:>4}-{hi:<5} bars: fire rate {rate:>6.1%} "
+                  f"+/-{1.96*se:.1%}  (at risk {at_risk})")
+            rates.append((rate, se))
+        print(f"     cv = sd/mean = {hz['cv']:.2f}  (1.00 = exponential = "
+              f"memoryless)")
+        if len(rates) >= 2:
+            (r1, s1), (r2, s2) = rates[0], rates[-1]
+            z = (r2 - r1) / math.sqrt(s1*s1 + s2*s2) if (s1 or s2) else 0
+            print(f"     first vs last bin: z = {z:+.2f}")
+            if abs(z) > 2:
+                print(f"     -> hazard is NOT flat: elapsed time changes the odds.")
+                flags.append("hazard not flat")
+            else:
+                print(f"     -> hazard flat within error: waiting tells you "
+                      f"nothing.")
 
     sw = test_size_vs_wait(sp)
     if sw:

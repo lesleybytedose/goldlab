@@ -13,6 +13,13 @@ alongside on the same bars, so there is always a benchmark.
 import csv, glob, hashlib, json, os, random, sys
 from datetime import datetime, timezone, timedelta
 try:
+    from publish import is_holdout
+except Exception:
+    import hashlib as _hl
+    def is_holdout(r, pct=30):
+        k = r.get('k') or f"{r.get('sym')}|{r.get('model')}|{r.get('ts')}"
+        return int(_hl.md5(k.encode()).hexdigest()[:8], 16) % 100 < pct
+try:
     from clusters import cluster_at, headroom_at
 except Exception:
     cluster_at = lambda b, i, a, price=None: {}
@@ -344,44 +351,84 @@ def detect(feedname, backfill=False):
 
 
 def report():
+    """Development-set scoreboard.
+
+    The holdout is counted and never scored here. Reading holdout numbers
+    day to day is the same as spending them - the point of a one-shot test
+    is that you look once, deliberately, through publish.py --reveal-holdout.
+
+    Controls are compared by GEOMETRY: a 2.0R model is judged against the
+    2.0R coin flip, not against whichever control happens to be handy.
+    Geometry alone is worth about 0.2R, so an unmatched comparison can
+    make a coin flip look like an edge.
+    """
     rows = read_log()
+    CTRL_BY_GEO = {2.0: "RANDOM CTRL 2.0R", 1.5: "RANDOM CTRL 1.5R",
+                   1.8: "RANDOM CONTROL"}
+
+    def geo(r):
+        try:
+            risk = abs(r["entry"] - r["stop"])
+            return round(abs(r["target"] - r["entry"]) / risk, 1) if risk else None
+        except Exception:
+            return None
+
     for phase in ("forward", "backfill"):
         sub = [r for r in rows if r.get("phase") == phase]
         if not sub:
             continue
-        print(f"\n  {'FORWARD TEST' if phase=='forward' else 'BACKFILL (reference only)'}"
-              f"   {len(sub)} logged")
-        print("  " + "=" * 74)
-        print(f"  {'MODEL':22}{'n':>6}{'open':>7}{'win':>8}{'exp':>9}{'total':>10}")
-        print("  " + "-" * 74)
+        held = [r for r in sub if phase == "forward" and is_holdout(r)]
+        dev = [r for r in sub if not (phase == "forward" and is_holdout(r))]
+        head = "FORWARD TEST (development set)" if phase == "forward" \
+               else "BACKFILL (reference only)"
+        print(f"\n  {head}   {len(dev)} logged")
+        if held:
+            sealed = sum(1 for r in held if r.get("R") is not None)
+            print(f"  holdout: {len(held)} signals ({sealed} resolved) — SEALED, "
+                  f"not shown")
+        print("  " + "=" * 78)
+        print(f"  {'MODEL':22}{'n':>6}{'open':>7}{'win':>8}{'exp':>9}{'total':>10}"
+              f"{'vs ctrl':>12}")
+        print("  " + "-" * 78)
+
         by = {}
-        for r in sub:
+        for r in dev:
             by.setdefault(r["model"], []).append(r)
-        ctrl = None
-        lines = []
+
+        # expectancy of each control, within this phase's dev set
+        ctrl_exp = {}
+        for g, name in CTRL_BY_GEO.items():
+            R = [x["R"] for x in by.get(name, []) if x["R"] is not None]
+            if R:
+                ctrl_exp[g] = sum(R) / len(R)
+
         for m in sorted(by):
-            R = [x["R"] for x in by[m] if x["R"] is not None]
-            op = sum(1 for x in by[m] if x["R"] is None)
+            rs = by[m]
+            R = [x["R"] for x in rs if x["R"] is not None]
+            op = sum(1 for x in rs if x["R"] is None)
             if not R:
-                lines.append((m, f"  {m:22}{0:>6}{op:>7}{'—':>8}{'—':>9}{'—':>10}", None))
+                print(f"  {m:22}{0:>6}{op:>7}{'—':>8}{'—':>9}{'—':>10}{'—':>12}")
                 continue
             w = [x for x in R if x > 0]
             exp = sum(R) / len(R)
-            if m == "RANDOM CONTROL":
-                ctrl = exp
-            lines.append((m,
-                f"  {m:22}{len(R):>6}{op:>7}{len(w)/len(R):>7.1%}"
-                f"{exp:>+8.2f}R{sum(R):>+9.1f}R", exp))
-        for m, line, exp in lines:
-            mark = ""
-            if ctrl is not None and exp is not None and m != "RANDOM CONTROL":
-                mark = "  beats control" if exp > ctrl + 0.05 else ""
-            print(line + mark)
-        print("  " + "-" * 74)
+            gs = [g for g in (geo(x) for x in rs) if g]
+            g = sorted(gs)[len(gs)//2] if gs else 2.0
+            cg = min(ctrl_exp, key=lambda k: abs(k - g)) if ctrl_exp else None
+            if m in CTRL_BY_GEO.values():
+                tail = f"{'(control)':>12}"
+            elif cg is None or len(R) < 30:
+                tail = f"{'n<30':>12}"
+            else:
+                d = exp - ctrl_exp[cg]
+                tail = f"{d:>+10.2f}R" + ("  " if d <= 0.05 else " *")
+            print(f"  {m:22}{len(R):>6}{op:>7}{len(w)/len(R):>7.1%}"
+                  f"{exp:>+8.2f}R{sum(R):>+9.1f}R{tail}")
+        print("  " + "-" * 78)
     print("""
-  The random control is the bar. A model only matters if it stays above it
-  once thirty or more of its trades have resolved. Anything below is noise
-  wearing a name.
+  vs ctrl = expectancy minus the coin flip AT THE SAME GEOMETRY. A star
+  marks a model above its own control, which is a hint and nothing more:
+  publish.py applies the multiple-comparison correction that decides
+  whether it counts, and the holdout above stays sealed either way.
 """)
 
 

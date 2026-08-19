@@ -17,6 +17,7 @@ SECRET = os.environ.get("GOLDLAB_INGEST", "changeme")
 PORT = 8790
 SAFE = re.compile(r"^[A-Za-z0-9_.-]{1,20}$")
 HEADER = "date,time,open,high,low,close,spread,volume\n"
+LEASE_SEC = 300      # a served signal is re-offered after this if no fill was reported
 
 
 class H(BaseHTTPRequestHandler):
@@ -31,6 +32,16 @@ class H(BaseHTTPRequestHandler):
         if d.get("secret") != SECRET:
             self.send_response(403); self.end_headers(); return
         if d.get("fill"):
+            # a reported fill retires the signal permanently
+            try:
+                k = (d["fill"] or {}).get("k")
+                if k and (d["fill"] or {}).get("ok"):
+                    SENTP = os.path.expanduser("~/goldlab/logs/sent_to_bot.json")
+                    try: s = set(json.load(open(SENTP)))
+                    except Exception: s = set()
+                    s.add(k)
+                    json.dump(sorted(s)[-5000:], open(SENTP, "w"))
+            except Exception: pass
             fp = os.path.expanduser("~/goldlab/logs/demo_fills.jsonl")
             try:
                 d["received"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -44,16 +55,20 @@ class H(BaseHTTPRequestHandler):
         if not SAFE.match(sym):
             self.send_response(400); self.end_headers(); return
         rows = d.get("bars") or []
+        # timeframe tag: older EAs send none, which means the M15 research feed
+        tf = str(d.get("tf", "M15")).upper()
+        if not re.match(r"^(M1|M5|M15|M30|H1|H4)$", tf):
+            tf = "M15"
         if d.get("live"):
             # the candle still forming - keep it in its own file, overwritten each time
-            lp = os.path.join(RAW, f"{sym}_M15_forming.json")
+            lp = os.path.join(RAW, f"{sym}_{tf}_forming.json")
             try:
                 json.dump(rows[0], open(lp, "w"))
             except Exception: pass
             self.send_response(200); self.end_headers()
             self.wfile.write(json.dumps(dict(ok=True, live=True)).encode()); return
         os.makedirs(RAW, exist_ok=True)
-        p = os.path.join(RAW, f"{sym}_M15_live.csv")
+        p = os.path.join(RAW, f"{sym}_{tf}_live.csv")
         new = not os.path.exists(p)
         seen = set()
         if not new:
@@ -73,7 +88,7 @@ class H(BaseHTTPRequestHandler):
                             f"{int(float(b.get('v', 0)))}\n")
                     seen.add(key); w += 1
                 except Exception: pass
-        print(f"  {sym}: +{w} bars ({len(rows)} sent)", flush=True)
+        print(f"  {sym} {tf}: +{w} bars ({len(rows)} sent)", flush=True)
         self.send_response(200); self.end_headers()
         self.wfile.write(json.dumps(dict(ok=True, written=w)).encode())
 
@@ -125,10 +140,23 @@ class H(BaseHTTPRequestHandler):
                                 entry=r["entry"], stop=r["stop"],
                                 target=r["target"], ts=r["ts"]))
         out = out[:5]
+        # A served signal is LEASED, not consumed. It is only permanently
+        # marked sent when the EA reports a successful fill. If the EA
+        # refuses it (stop too wide, min lot unreachable) it becomes
+        # available again after LEASE_SEC so the test does not silently
+        # starve - which is how 710 signals were burned before this change.
         if out:
-            sent |= {o["k"] for o in out}
-            try: json.dump(sorted(sent)[-5000:], open(SENT, "w"))
+            import time as _t
+            LEASE = os.path.expanduser("~/goldlab/logs/leases.json")
+            try: leases = json.load(open(LEASE))
+            except Exception: leases = {}
+            now = _t.time()
+            leases = {k: v for k, v in leases.items() if now - v < LEASE_SEC}
+            fresh = [o for o in out if o["k"] not in leases]
+            for o in fresh: leases[o["k"]] = now
+            try: json.dump(leases, open(LEASE, "w"))
             except Exception: pass
+            out = fresh
         self._json(200, dict(signals=out))
 
 

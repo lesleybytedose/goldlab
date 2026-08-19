@@ -157,8 +157,15 @@ def _recent(sym, ts, minutes=WINDOW_MIN):
 
 
 def confluence(sig):
-    """Returns (n_models, names, urgent). Logs every agreement event, and
-    separately logs control-agreement so the urgent flag has a baseline."""
+    """Returns (n_models, names, urgent).
+
+    Logs EVERY agreement event with BOTH counts recorded independently, so
+    "do multi-model signals resolve better?" can be compared against how
+    often the coin flips happened to agree at the same moment. The earlier
+    version tagged an event as either models-or-controls, which destroyed
+    the baseline; it also double-logged when alerts ran twice on one
+    candle. Both fixed here.
+    """
     sym, d, ts = sig.get("sym"), sig.get("dir"), sig.get("ts", "")
     near = _recent(sym, ts)
     agree = sorted({r["model"] for r in near
@@ -167,17 +174,37 @@ def confluence(sig):
                          if r.get("dir") == d and "RANDOM" in r.get("model", "")})
     n = len(agree)
     urgent = n >= URGENT_AT
+
     if n >= 2 or len(ctrl_agree) >= 2:
-        try:
-            with open(CONFLOG, "a") as f:
-                f.write(json.dumps(dict(
-                    sym=sym, dir=d, ts=ts, models=agree,
-                    controls_agreeing=ctrl_agree,
-                    kind=("models" if n >= 2 else "controls"),
-                    at=datetime.now(FEED_TZ).isoformat(timespec="seconds"))) + "\n")
-        except Exception:
-            pass
+        ev_id = f"{sym}|{d}|{ts}"
+        if not _already_logged(ev_id):
+            try:
+                with open(CONFLOG, "a") as f:
+                    f.write(json.dumps(dict(
+                        id=ev_id, sym=sym, dir=d, ts=ts,
+                        n_models=n, models=agree,
+                        n_controls=len(ctrl_agree), controls=ctrl_agree,
+                        at=datetime.now(FEED_TZ).isoformat(timespec="seconds"))) + "\n")
+            except Exception:
+                pass
     return n, agree, urgent
+
+
+def _already_logged(ev_id):
+    """One row per (symbol, direction, candle). Alerts can run more than
+    once against the same candle; the log should not grow because of it."""
+    if not os.path.exists(CONFLOG):
+        return False
+    try:
+        for ln in open(CONFLOG):
+            try:
+                if json.loads(ln).get("id") == ev_id:
+                    return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return False
 
 
 def urgent_header(n, names, html=False):

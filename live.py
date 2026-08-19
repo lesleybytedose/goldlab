@@ -12,6 +12,10 @@ alongside on the same bars, so there is always a benchmark.
 """
 import csv, glob, hashlib, json, os, random, sys
 from datetime import datetime, timezone, timedelta
+try:
+    from clusters import cluster_at
+except Exception:
+    cluster_at = lambda b, i, a, price=None: {}
 
 SAST = timezone(timedelta(hours=2))
 FEED_TZ = timezone.utc  # EA sends broker time = UTC
@@ -317,6 +321,7 @@ def detect(feedname, backfill=False):
                 spread=round(b[i][5] if b[i][5] > 0 else u*0.05, 4),
                 phase="backfill" if backfill else "forward",
                 **covs(b, a, i, d),
+                **cluster_at(b, i, u, e),
                 spread_pct=round((b[i][5] if b[i][5] > 0 else u*0.05) / (satr*u), 3),
                 logged=datetime.now(FEED_TZ).isoformat(timespec="seconds"),
                 R=None,

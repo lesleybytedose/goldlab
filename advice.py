@@ -59,6 +59,10 @@ def quality_block(sig, html=False):
         flags.append("quiet regime")
     elif sig.get("vol") == "expanding":
         flags.append("expanding regime")
+    hr = sig.get("hr_atr")
+    if hr is not None and sig.get("hr_n"):
+        flags.append(f"{sig['hr_n']}-rule level {hr:.1f} ATR ahead, inside the "
+                     f"target ({sig.get('hr_src','').split('|')[0]})")
     sp = sig.get("spread_pct")
     if sp is not None and sp >= 0.25:
         flags.append(f"spread eats {sp:.0%} of risk")

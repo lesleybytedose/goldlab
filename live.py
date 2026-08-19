@@ -13,9 +13,10 @@ alongside on the same bars, so there is always a benchmark.
 import csv, glob, hashlib, json, os, random, sys
 from datetime import datetime, timezone, timedelta
 try:
-    from clusters import cluster_at
+    from clusters import cluster_at, headroom_at
 except Exception:
     cluster_at = lambda b, i, a, price=None: {}
+    headroom_at = lambda b, i, a, e, t, d: {}
 
 SAST = timezone(timedelta(hours=2))
 FEED_TZ = timezone.utc  # EA sends broker time = UTC
@@ -322,6 +323,8 @@ def detect(feedname, backfill=False):
                 phase="backfill" if backfill else "forward",
                 **covs(b, a, i, d),
                 **cluster_at(b, i, u, e),
+                **headroom_at(b, i, u, e,
+                              e + tatr*u if d == "long" else e - tatr*u, d),
                 spread_pct=round((b[i][5] if b[i][5] > 0 else u*0.05) / (satr*u), 3),
                 logged=datetime.now(FEED_TZ).isoformat(timespec="seconds"),
                 R=None,

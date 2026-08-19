@@ -107,3 +107,46 @@ def cluster_at(b, i, atr_val, price=None):
                 "lvl_dist_atr": round(near, 3)}
     except Exception:
         return {}
+
+
+def headroom_at(b, i, atr_val, entry, target, direction):
+    """Is there a level cluster BETWEEN the entry and the target?
+
+    Pure geometry. Says nothing about whether the level will hold - only
+    that the trade has to pass through it to reach its target, and how
+    many independent rules mark that price.
+
+        hr_atr    distance from entry to the nearest opposing cluster, in ATR
+        hr_n      how many rules mark that cluster
+        hr_src    which rules
+        tp_blocked True if the target sits BEYOND that cluster
+        headroom_r how far the nearest obstacle is, expressed in R
+    """
+    try:
+        if not atr_val or atr_val <= 0:
+            return {}
+        tol = MERGE_ATR * atr_val
+        up = direction == "long"
+        # group levels lying between entry and target
+        groups = []
+        for lv, src in sorted(levels_at(b, i)):
+            if up and not (entry < lv <= max(target, entry)):
+                continue
+            if (not up) and not (min(target, entry) <= lv < entry):
+                continue
+            if groups and abs(lv - groups[-1]["price"]) <= tol:
+                groups[-1]["srcs"].add(src)
+            else:
+                groups.append({"price": lv, "srcs": {src}})
+        if not groups:
+            return {"hr_n": 0, "hr_atr": None, "hr_src": "", "tp_blocked": False}
+        nearest = min(groups, key=lambda g: abs(g["price"] - entry))
+        # the "obstacle" worth naming is the densest one in the path
+        dense = max(groups, key=lambda g: len(g["srcs"]))
+        d = abs(nearest["price"] - entry)
+        return {"hr_n": len(dense["srcs"]),
+                "hr_atr": round(d / atr_val, 2),
+                "hr_src": "|".join(sorted(dense["srcs"]))[:120],
+                "tp_blocked": True}
+    except Exception:
+        return {}

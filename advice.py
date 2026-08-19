@@ -59,6 +59,11 @@ def quality_block(sig, html=False):
         flags.append("quiet regime")
     elif sig.get("vol") == "expanding":
         flags.append("expanding regime")
+    if sig.get("into_level"):
+        t = sig.get("lvl_touches", 0)
+        side = sig.get("lvl_side", "level")
+        flags.append(f"entering INTO {side} price has already tested {t}x "
+                     f"({sig.get('lvl_bars_at',0)} bars sitting on it)")
     hr = sig.get("hr_atr")
     if hr is not None and sig.get("hr_n"):
         flags.append(f"{sig['hr_n']}-rule level {hr:.1f} ATR ahead, inside the "

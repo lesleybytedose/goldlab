@@ -20,10 +20,11 @@ except Exception:
         k = r.get('k') or f"{r.get('sym')}|{r.get('model')}|{r.get('ts')}"
         return int(_hl.md5(k.encode()).hexdigest()[:8], 16) % 100 < pct
 try:
-    from clusters import cluster_at, headroom_at
+    from clusters import cluster_at, headroom_at, level_state
 except Exception:
     cluster_at = lambda b, i, a, price=None: {}
     headroom_at = lambda b, i, a, e, t, d: {}
+    level_state = lambda b, i, a, d: {}
 
 SAST = timezone(timedelta(hours=2))
 FEED_TZ = timezone.utc  # EA sends broker time = UTC
@@ -214,6 +215,42 @@ MODELS = {
 }
 
 
+
+# ---------------------------------------------------------------- gating
+# A model may only run where its PREMISE exists. Session models assume a
+# market that opens; pivot and sweep models assume participants leaving
+# orders behind. Deriv synthetics have neither - they are generated
+# processes with no sessions, no daily close and no stop clusters. Running
+# "London break" on Boom 1000 is not a weak edge, it is a category error.
+#
+# Classes:
+#   real  - traded markets with sessions and participants (gold, silver,
+#           FX, Gold Basket: a 24/5 derived index priced off real FX)
+#   synth - Deriv generated indices (V75, Boom, Crash): 24/7, no sessions
+#
+# Controls run EVERYWHERE. They are the benchmark, not a strategy.
+SYNTH_MARKERS = ("Volatility_", "Boom_", "Crash_", "Step_", "Jump_", "Range_Break")
+
+# models whose premise survives without sessions or participants:
+# pure volatility, range and channel mechanics only.
+SYNTH_OK = {
+    "MA/ATR band", "Donchian SAR", "Donchian SAR p10",
+    "Contraction break", "Contraction v2 b4t1.6",
+    "Keltner pullback", "TF channel", "Range spike",
+    "RANDOM CONTROL", "RANDOM CTRL 1.5R", "RANDOM CTRL 2.0R",
+}
+
+
+def sym_class(sym):
+    return "synth" if any(m in sym for m in SYNTH_MARKERS) else "real"
+
+
+def model_allowed(name, sym):
+    if sym_class(sym) == "real":
+        return True
+    return name in SYNTH_OK
+
+
 # ---------------------------------------------------------------- engine
 def read_log():
     rows = []
@@ -304,7 +341,11 @@ def detect(feedname, backfill=False):
     cutoff = b[-1][0] - timedelta(hours=2)      # only recent bars unless backfilling
 
     added = 0
+    skipped = []
     for name, fn in MODELS.items():
+        if not model_allowed(name, sym):
+            skipped.append(name)
+            continue
         try:
             sigs = fn(b, a, sess)
         except Exception as e:
@@ -332,6 +373,7 @@ def detect(feedname, backfill=False):
                 **cluster_at(b, i, u, e),
                 **headroom_at(b, i, u, e,
                               e + tatr*u if d == "long" else e - tatr*u, d),
+                **level_state(b, i, u, d),
                 spread_pct=round((b[i][5] if b[i][5] > 0 else u*0.05) / (satr*u), 3),
                 logged=datetime.now(FEED_TZ).isoformat(timespec="seconds"),
                 R=None,
@@ -347,6 +389,9 @@ def detect(feedname, backfill=False):
             if v is not None:
                 r["R"], r["held"] = v
     write_log(rows)
+    if skipped and added:
+        print(f"    ({sym}: {len(skipped)} model(s) not run - premise absent "
+              f"on a generated index)")
     return added
 
 

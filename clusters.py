@@ -150,3 +150,58 @@ def headroom_at(b, i, atr_val, entry, target, direction):
                 "tp_blocked": True}
     except Exception:
         return {}
+
+
+def level_state(b, i, atr_val, direction, back=40):
+    """Is price sitting AT a level right now, and has it been rejected there?
+
+    Different question from headroom_at(). Headroom asks what stands between
+    entry and target. This asks what price is pressed against at the moment
+    of entry, and how many times it has already failed to get through.
+
+        at_level      True if entry is within MERGE_ATR of a cluster
+        lvl_side      "resistance" (cluster above) or "support" (below)
+        lvl_touches   bars in the last `back` that reached that cluster
+        lvl_bars_at   consecutive recent bars within tolerance of it
+        into_level    True if the trade is heading INTO it (long under
+                      resistance, short above support)
+
+    No lookahead: bars > i are never read.
+    """
+    try:
+        if not atr_val or atr_val <= 0 or i < 5:
+            return {}
+        p = b[i][4]
+        tol = MERGE_ATR * atr_val
+        # cluster the visible levels, keep the one nearest price
+        groups = []
+        for lv, src in sorted(levels_at(b, i)):
+            if groups and abs(lv - groups[-1]["price"]) <= tol:
+                groups[-1]["srcs"].add(src)
+            else:
+                groups.append({"price": lv, "srcs": {src}})
+        if not groups:
+            return {}
+        near = min(groups, key=lambda g: abs(g["price"] - p))
+        d = near["price"] - p
+        if abs(d) > tol:
+            return {"at_level": False}
+        side = "resistance" if d >= 0 else "support"
+        lo = max(0, i - back)
+        touches = sum(1 for k in range(lo, i + 1)
+                      if b[k][2] >= near["price"] - tol
+                      and b[k][3] <= near["price"] + tol)
+        bars_at = 0
+        for k in range(i, lo - 1, -1):
+            if abs(b[k][4] - near["price"]) <= tol:
+                bars_at += 1
+            else:
+                break
+        into = (direction == "long" and side == "resistance") or \
+               (direction == "short" and side == "support")
+        return {"at_level": True, "lvl_side": side,
+                "lvl_touches": touches, "lvl_bars_at": bars_at,
+                "lvl_rules": len(near["srcs"]),
+                "into_level": into}
+    except Exception:
+        return {}
